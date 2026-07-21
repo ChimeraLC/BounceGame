@@ -8,17 +8,18 @@ public partial class CollisionManager
 {
     public static CollisionManager Instance { get; private set; }
     private HashSet<CollisionObstacle> collisionObstacles;
-
+    private HashSet<Hitbox> hitboxes;
     public CollisionManager()
     {
         Instance = this;
         collisionObstacles = new HashSet<CollisionObstacle>();
+        hitboxes = new HashSet<Hitbox>();
     }
 
     /// <summary>
     /// Returns distance to first straight line rayhit in a given (normalized) direction
     /// </summary>
-    public static (float, CollisionObstacle) GetFirstRayhit(Vector2 start, Vector2 direction)
+    public static (float, CollisionObstacle) GetFirstCollisionRayhit(Vector2 start, Vector2 direction)
     {
         float firstHit = -1;
         CollisionObstacle hitObstacle = null;
@@ -44,6 +45,51 @@ public partial class CollisionManager
     }
 
     public static void RemoveCollisionObstacle(CollisionObstacle outObstacle)
+    {
+        Logger.Log($"Removing collsion obstacle {outObstacle}", LogLevel.info);
+        Instance.collisionObstacles.Remove(outObstacle);
+    }
+
+    public static (float, HitboxOwner) GetFirstHitboxRayhit(Vector2 start, Vector2 direction, HitboxOwnerType queryType = HitboxOwnerType.Any)
+    {
+        float firstHit = -1;
+        HitboxOwner hitOwner = null;
+
+        float potentialHit;
+        int currentFrame = GameManager.GetCurrentFrame();
+        foreach ( Hitbox hitbox in Instance.hitboxes)
+        {
+            if (hitbox.hitboxOwner == null)
+            {
+                Logger.Log("Hitbox {hitbox} has a null owner", LogLevel.error);
+                continue;
+            }
+
+            // Update hitbox position if necessary
+            if (hitbox.lastUpdatedHitboxFrame != currentFrame)
+            {
+                hitbox.hitboxOwner.UpdateHitbox();
+                hitbox.lastUpdatedHitboxFrame = currentFrame;
+            }
+
+            potentialHit = hitbox.GetFirstRayHit(start, direction);
+            if (potentialHit > 0 && (firstHit < 0 || potentialHit < firstHit))
+            {
+                firstHit = potentialHit;
+                hitOwner = hitbox.hitboxOwner;
+            }
+        }
+
+        return (firstHit, hitOwner);
+    }
+
+    public static void AddHitbox(Hitbox inHitbox)
+    {
+        Logger.Log($"Adding collision obstacle {inHitbox}", LogLevel.info);
+        Instance.hitboxes.Add(inHitbox);
+    }
+
+    public static void RemoveHitbox(CollisionObstacle outObstacle)
     {
         Logger.Log($"Removing collsion obstacle {outObstacle}", LogLevel.info);
         Instance.collisionObstacles.Remove(outObstacle);

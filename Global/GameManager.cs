@@ -15,6 +15,7 @@ public partial class GameManager : Node
     public static bool mouseK { get; private set; }
 
     private CollisionManager collisionManager;
+    private int currentFrame;
 
     public override void _Ready()
     {
@@ -25,10 +26,14 @@ public partial class GameManager : Node
         paused = false;
         timeDilation = 1;
         mouseK = true;
+        currentFrame = 0;
 
         // Create collision manager
         Logger.Log("Creating Collsion Manager", LogLevel.info);
         collisionManager = new CollisionManager();
+
+        RectHitbox testHitbox = new RectHitbox(null, new Vector2(4, 4), new Vector2(1, 4));
+        GD.Print(testHitbox.GetFirstRayHit(new Vector2(0, 0), new Vector2(0.71f, 0.71f)));
     }
 
     // Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -42,7 +47,13 @@ public partial class GameManager : Node
         {
             float trueTime = delta * timeDilation;
             Tick(trueTime);
+            currentFrame++;
         }
+    }
+
+    public static int GetCurrentFrame()
+    {
+        return Instance.currentFrame;
     }
 
     public static void EndGame()

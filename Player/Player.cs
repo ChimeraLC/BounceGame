@@ -50,7 +50,7 @@ public class Player : Node2D
 
         // Find first collision with walls
         // TODO: Move this into subfunction to allow for bounces
-        (float firstHit, _) = CollisionManager.GetFirstRayhit(Position, aimDirection);
+        (float firstHit, _) = CollisionManager.GetFirstCollisionRayhit(Position, aimDirection);
         // if (aimDirection.x > 0)
         //     firstHit = Mathf.Min(firstHit, (field.rightBound - Position.x) / aimDirection.x);
         // if (aimDirection.x < 0)
@@ -60,8 +60,16 @@ public class Player : Node2D
         // if (aimDirection.y < 0)
         //     firstHit = Mathf.Min(firstHit, (field.topBound - Position.y) / aimDirection.y);
 
-        previewLine.SetPointPosition(1, aimDirection * firstHit);
-        
+        if (currentGun.CanFire())
+        {
+            previewLine.Visible = true;
+            previewLine.SetPointPosition(1, aimDirection * firstHit);
+        }
+        else
+        {
+            previewLine.Visible = false;
+        }
+
         currentGun.TickGun(this, aimDirection, currentFakeGun, delta);
         if (Input.IsActionJustPressed("key_fire"))
         {
