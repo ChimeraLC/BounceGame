@@ -3,6 +3,8 @@ using System;
 
 public class Player : Node2D
 {
+    // Health
+    private int health = 3;
 
     // Movement
     private const float Bounciness = 0.75f;
@@ -36,6 +38,8 @@ public class Player : Node2D
         TickWeapon(delta);
     }
 
+    public int GetHP() { return health; }
+
     public void ImpulseVelocity(Vector2 impulse)
     {
         velocity += impulse;
@@ -51,14 +55,6 @@ public class Player : Node2D
         // Find first collision with walls
         // TODO: Move this into subfunction to allow for bounces
         (float firstHit, _) = CollisionManager.GetFirstCollisionRayhit(Position, aimDirection);
-        // if (aimDirection.x > 0)
-        //     firstHit = Mathf.Min(firstHit, (field.rightBound - Position.x) / aimDirection.x);
-        // if (aimDirection.x < 0)
-        //     firstHit = Mathf.Min(firstHit, (field.leftBound - Position.x) / aimDirection.x);
-        // if (aimDirection.y > 0)
-        //     firstHit = Mathf.Min(firstHit, (field.bottomBound - Position.y) / aimDirection.y);
-        // if (aimDirection.y < 0)
-        //     firstHit = Mathf.Min(firstHit, (field.topBound - Position.y) / aimDirection.y);
 
         if (currentGun.CanFire())
         {

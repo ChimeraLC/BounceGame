@@ -16,7 +16,7 @@ public class Field : Node2D
 
         GameManager.RegisterFieldInstance(this);
 
-        // Create collision obstacles
+        // Create collision obstacles that bound the playfield
         CollisionManager.AddCollisionObstacle(new VertAxisCollision(leftBound));
         CollisionManager.AddCollisionObstacle(new VertAxisCollision(rightBound));
         CollisionManager.AddCollisionObstacle(new HorAxisCollision(topBound));

@@ -12,6 +12,7 @@ public interface HitboxOwner
 {
     // Called before any hitbox calculations, so they aren't updated every frame
     void UpdateHitbox();
+    Hitbox GetHitbox();
     HitboxOwnerType GetHitboxOwnerType();
 }
 
@@ -47,7 +48,7 @@ public class RectHitbox : Hitbox
         // Only need to check closer 2 sides
         if (!Mathf.IsZeroApprox(direction.x))
         {
-            float xHit = offsetCenter.x + direction.x > 0 ? -1 : 1 * dimensions.x / 2;
+            float xHit = offsetCenter.x + (direction.x > 0 ? -1 : 1) * dimensions.x / 2;
             float hitTime = xHit / direction.x;
             // Valid hit that's within the bounds
             if (hitTime > 0 && Mathf.Abs(direction.y * hitTime - offsetCenter.y) <= dimensions.y / 2)
@@ -56,7 +57,7 @@ public class RectHitbox : Hitbox
 
         if (!Mathf.IsZeroApprox(direction.y))
         {
-            float yHit = offsetCenter.y + direction.y > 0 ? -1 : 1 * dimensions.y / 2;
+            float yHit = offsetCenter.y + (direction.y > 0 ? -1 : 1) * dimensions.y / 2;
             float hitTime = yHit / direction.y;
 
             if (hitTime > 0 && Mathf.Abs(direction.x * hitTime - offsetCenter.x) <= dimensions.x / 2)

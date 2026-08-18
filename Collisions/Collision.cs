@@ -65,6 +65,11 @@ public partial class CollisionManager
                 continue;
             }
 
+            if (queryType != HitboxOwnerType.Any && hitbox.hitboxOwner.GetHitboxOwnerType() != queryType)
+            {
+                continue;
+            }
+
             // Update hitbox position if necessary
             if (hitbox.lastUpdatedHitboxFrame != currentFrame)
             {
@@ -89,10 +94,10 @@ public partial class CollisionManager
         Instance.hitboxes.Add(inHitbox);
     }
 
-    public static void RemoveHitbox(CollisionObstacle outObstacle)
+    public static void RemoveHitbox(Hitbox outHitbox)
     {
-        Logger.Log($"Removing collsion obstacle {outObstacle}", LogLevel.info);
-        Instance.collisionObstacles.Remove(outObstacle);
+        Logger.Log($"Removing collsion hitbox {outHitbox}", LogLevel.info);
+        Instance.hitboxes.Remove(outHitbox);
     }
 }
 

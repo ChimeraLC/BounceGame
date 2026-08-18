@@ -17,6 +17,15 @@ public class Pistol : Gun
         {
             
         }
+
+        // Deal damage
+        (float hitDist, HitboxOwner hitOwner) = CollisionManager.GetFirstHitboxRayhit(
+            firingPlayer.Position, aimDirection, HitboxOwnerType.Enemy
+        );
+        if (hitOwner is Enemy hitEnemy)
+        {
+            hitEnemy.TakeDamage(1);
+        }
     }
 
     public override void TickGun(Player firingPlayer, Vector2 aimDirection, FakeGun fakeGun, float delta)

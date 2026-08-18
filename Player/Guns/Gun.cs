@@ -1,6 +1,11 @@
 using Godot;
 using System;
 
+public enum DamageType
+{
+    Ballistic
+}
+
 public abstract class Gun
 {
     protected int remainingAmmo;
