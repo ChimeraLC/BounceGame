@@ -9,7 +9,7 @@ public partial class BasicEnemy : Enemy
     {
         base._Ready();
 
-        hitbox = new RectHitbox(this, Position, new Vector2(100, 100));
+        hitbox = new RectHitbox(this, Position, new Vector2(50, 50));
         CollisionManager.AddHitbox(hitbox);
     }
 

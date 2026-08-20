@@ -22,6 +22,10 @@ public abstract class Hitbox
 
     public HitboxOwner hitboxOwner;
     public abstract float GetFirstRayHit(Vector2 start, Vector2 direction);
+    public abstract bool GetContainsHit(Vector2 testPosition);
+    public abstract Vector2 GetCenter();
+    public abstract Vector2 GetNormal(Vector2 testPoint);
+
 }
 
 // TODO: Checks for if ray starts already within hitbox?
@@ -30,12 +34,12 @@ public abstract class Hitbox
 public class RectHitbox : Hitbox
 {
     public Vector2 center;
-    public Vector2 dimensions;
-    public RectHitbox(HitboxOwner inOwner, Vector2 inCenter, Vector2 inDimensions)
+    public Vector2 halfDimensions;
+    public RectHitbox(HitboxOwner inOwner, Vector2 inCenter, Vector2 inHalfDimensions)
     {
         hitboxOwner = inOwner;
         center = inCenter;
-        dimensions = inDimensions;
+        halfDimensions = inHalfDimensions;
     }
 
     public override float GetFirstRayHit(Vector2 start, Vector2 direction)
@@ -48,23 +52,43 @@ public class RectHitbox : Hitbox
         // Only need to check closer 2 sides
         if (!Mathf.IsZeroApprox(direction.x))
         {
-            float xHit = offsetCenter.x + (direction.x > 0 ? -1 : 1) * dimensions.x / 2;
+            float xHit = offsetCenter.x + (direction.x > 0 ? -1 : 1) * halfDimensions.x;
             float hitTime = xHit / direction.x;
             // Valid hit that's within the bounds
-            if (hitTime > 0 && Mathf.Abs(direction.y * hitTime - offsetCenter.y) <= dimensions.y / 2)
+            if (hitTime > 0 && Mathf.Abs(direction.y * hitTime - offsetCenter.y) <= halfDimensions.y)
                 return hitTime;
         }
 
         if (!Mathf.IsZeroApprox(direction.y))
         {
-            float yHit = offsetCenter.y + (direction.y > 0 ? -1 : 1) * dimensions.y / 2;
+            float yHit = offsetCenter.y + (direction.y > 0 ? -1 : 1) * halfDimensions.y;
             float hitTime = yHit / direction.y;
 
-            if (hitTime > 0 && Mathf.Abs(direction.x * hitTime - offsetCenter.x) <= dimensions.x / 2)
+            if (hitTime > 0 && Mathf.Abs(direction.x * hitTime - offsetCenter.x) <= halfDimensions.x)
                 return hitTime;
         }
         
         return -1;
+    }
+
+    public override bool GetContainsHit(Vector2 testPosition)
+    {
+        Vector2 offsetCenter = testPosition - center;
+        return Mathf.Abs(offsetCenter.x) < halfDimensions.x && Mathf.Abs(offsetCenter.y) < halfDimensions.y;
+    }
+
+    public override Vector2 GetCenter() { return center; }
+    public override Vector2 GetNormal(Vector2 testPoint)
+    {
+        Vector2 offset = testPoint - center;
+        if (Mathf.Abs(offset.x) > Mathf.Abs(offset.y))
+        {
+            return Mathf.Sign(offset.x) * Vector2.Right;
+        }
+        else
+        {
+            return Mathf.Sign(offset.y) * Vector2.Down;
+        }
     }
 }
 
@@ -91,5 +115,23 @@ public class CircleHitbox : Hitbox
         return Utils.PositiveQuadraticIfPossible(direction.x * direction.x + direction.y * direction.y,
             -2 * direction.x * offsetCenter.x - 2 * direction.y * offsetCenter.y,
             offsetCenter.x * offsetCenter.x + offsetCenter.y * offsetCenter.y - radius * radius);
+    }
+
+    public override bool GetContainsHit(Vector2 testPosition)
+    {
+        
+        Vector2 offsetCenter = testPosition - center;
+        // Initial check to avoid length queries
+        if (Mathf.Abs(offsetCenter.x) < radius && Mathf.Abs(offsetCenter.y) < radius)
+        {
+            return offsetCenter.LengthSquared() < radius * radius;
+        }
+        return false;
+    }
+
+    public override Vector2 GetCenter() { return center; }
+    public override Vector2 GetNormal(Vector2 testPoint)
+    {
+        return (testPoint - center).Normalized();
     }
 }

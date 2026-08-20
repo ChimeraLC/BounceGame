@@ -88,6 +88,38 @@ public partial class CollisionManager
         return (firstHit, hitOwner);
     }
 
+    // Returns a hitbox owner if it overlaps with the position; doesn't test closeness
+    public static (bool, HitboxOwner) GetContainsHit(Vector2 testPosition, HitboxOwnerType queryType = HitboxOwnerType.Any)
+    {
+        int currentFrame = GameManager.GetCurrentFrame();
+        foreach ( Hitbox hitbox in Instance.hitboxes)
+        {
+            if (hitbox.hitboxOwner == null)
+            {
+                Logger.Log("Hitbox {hitbox} has a null owner", LogLevel.error);
+                continue;
+            }
+
+            if (queryType != HitboxOwnerType.Any && hitbox.hitboxOwner.GetHitboxOwnerType() != queryType)
+            {
+                continue;
+            }
+
+            // Update hitbox position if necessary
+            if (hitbox.lastUpdatedHitboxFrame != currentFrame)
+            {
+                hitbox.hitboxOwner.UpdateHitbox();
+                hitbox.lastUpdatedHitboxFrame = currentFrame;
+            }
+
+            if (hitbox.GetContainsHit(testPosition))
+            {
+                return (true, hitbox.hitboxOwner);
+            }
+        }
+        return (false, null);
+    } 
+
     public static void AddHitbox(Hitbox inHitbox)
     {
         Logger.Log($"Adding collision obstacle {inHitbox}", LogLevel.info);

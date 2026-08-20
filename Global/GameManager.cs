@@ -17,6 +17,7 @@ public partial class GameManager : Node
     private CollisionManager collisionManager;
     public EnemyManager enemyManager;
     private int currentFrame;
+    private float gameTime;
 
     public override void _Ready()
     {
@@ -28,6 +29,7 @@ public partial class GameManager : Node
         timeDilation = 1;
         mouseK = true;
         currentFrame = 0;
+        gameTime = 0;
 
         // Create collision manager
         Logger.Log("Creating Collsion Manager", LogLevel.info);
@@ -48,6 +50,7 @@ public partial class GameManager : Node
         {
             float trueTime = delta * timeDilation;
             Tick(trueTime);
+            gameTime += trueTime;
             currentFrame++;
         }
     }
@@ -55,6 +58,11 @@ public partial class GameManager : Node
     public static int GetCurrentFrame()
     {
         return Instance.currentFrame;
+    }
+
+    public static float GetGameTime()
+    {
+        return Instance.gameTime;
     }
 
     public static void EndGame()

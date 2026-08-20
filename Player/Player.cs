@@ -5,6 +5,9 @@ public class Player : Node2D
 {
     // Health
     private int health = 3;
+    private const float InvulTimer = 3;
+    private float hitTimer = 0;
+    private const float MinHitSpeed = 300;
 
     // Movement
     private const float Bounciness = 0.75f;
@@ -34,7 +37,7 @@ public class Player : Node2D
     public void Tick(float delta)
     {
         RunPhysics(delta);
-
+        RunCollisions(delta);
         TickWeapon(delta);
     }
 
@@ -200,5 +203,42 @@ public class Player : Node2D
         }
         
         RunPhysics(delta - preDelta);
+    }
+
+    // Collisions with enemies don't have to be as exact
+    private void RunCollisions(float delta)
+    {
+        hitTimer = Mathf.Max(0, hitTimer - delta);
+
+        if (hitTimer <= 0)
+        {
+            (bool hit, HitboxOwner hitboxOwner) = CollisionManager.GetContainsHit(
+                Position, HitboxOwnerType.Enemy
+            );
+
+            if (hit && hitboxOwner is Enemy hitEnemy)
+            {
+                hitTimer = InvulTimer;
+
+                // Temp bounce code TODO: Maybe this should be run based on preframe position
+                Vector2 normal = hitboxOwner.GetHitbox().GetNormal(Position);
+                Vector2 projection = velocity.Dot(normal) * normal;
+                velocity -= 2 * projection;
+
+                // Maintaining a knockback speed
+                float currentSpeed = velocity.Length();
+                if (currentSpeed < MinHitSpeed)
+                {
+                    if (Mathf.IsZeroApprox(currentSpeed))
+                    {
+                        velocity = normal * MinHitSpeed;
+                    }
+                    else
+                    {
+                        velocity = velocity / currentSpeed * MinHitSpeed;
+                    }
+                }
+            }
+        }
     }
 }
