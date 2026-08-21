@@ -3,31 +3,30 @@ using Godot;
 public class DebugManager: Control
 {
     public static DebugManager Instance { get; private set; }
-    private RichTextLabel topLabel;
-    private RichTextLabel middleLabel;
-    private RichTextLabel rightLabel;
-
+    private RichTextLabel leftTopLabel;
+    private RichTextLabel leftMiddleLabel;
+    private RichTextLabel rightTopLabel;
     public override void _Ready()
     {   
         Instance = this;
 
-        topLabel = GetNode<RichTextLabel>("TopLabel");
-        middleLabel = GetNode<RichTextLabel>("MiddleLabel");
-        rightLabel = GetNode<RichTextLabel>("RightLabel");
+        leftTopLabel = GetNode<RichTextLabel>("LeftTopLabel");
+        leftMiddleLabel = GetNode<RichTextLabel>("LeftMiddleLabel");
+        rightTopLabel = GetNode<RichTextLabel>("RightTopLabel");
     }
 
     public static void DebugStringTop(string message)
     {
-        Instance.topLabel.Text = message;
+        Instance.leftTopLabel.Text = message;
     }
 
     public static void DebugStringMiddle(string message)
     {
-        Instance.middleLabel.Text = message;
+        Instance.leftMiddleLabel.Text = message;
     }
 
     public static void DebugStringRight(string message)
     {
-        Instance.rightLabel.Text = message;
+        Instance.rightTopLabel.Text = message;
     }
 }

@@ -20,18 +20,15 @@ public class Player : Node2D
     private FakeGun currentFakeGun;
     private Gun currentGun;
     private Gun nextGun;
-    private Line2D previewLine;
     public override void _Ready()
     {
         GameManager.RegisterPlayerInstance(this);
     
         velocity = Vector2.Zero;
 
-        previewLine = GetNode<Line2D>("Preview");
-        previewLine.Points = new Vector2[] {Vector2.Zero, Vector2.Zero};
-
         currentFakeGun = GetNode<FakeGun>("FakeGun");
         currentGun = new Pistol();
+        nextGun = new Shotgun();
     }
 
     public void Tick(float delta)
@@ -39,6 +36,8 @@ public class Player : Node2D
         RunPhysics(delta);
         RunCollisions(delta);
         TickWeapon(delta);
+
+        Update();
     }
 
     public int GetHP() { return health; }
@@ -55,21 +54,15 @@ public class Player : Node2D
         // Currently, just a straight line to the mouse
         Vector2 aimDirection = GetAimDirection();
 
-        // Find first collision with walls
-        // TODO: Move this into subfunction to allow for bounces
-        (float firstHit, _) = CollisionManager.GetFirstCollisionRayhit(Position, aimDirection);
-
-        if (currentGun.CanFire())
+        if (Input.IsActionJustPressed("key_swapUp")
+            || Input.IsActionJustPressed("key_swapDown"))
         {
-            previewLine.Visible = true;
-            previewLine.SetPointPosition(1, aimDirection * firstHit);
-        }
-        else
-        {
-            previewLine.Visible = false;
+            (currentGun, nextGun) = (nextGun, currentGun);
         }
 
         currentGun.TickGun(this, aimDirection, currentFakeGun, delta);
+        nextGun.TickGunPassive(delta);
+        
         if (Input.IsActionJustPressed("key_fire"))
         {
             if (currentGun.CanFire())
@@ -78,6 +71,14 @@ public class Player : Node2D
                 currentGun.Fire( this, aimDirection );
             }
         }
+
+        DebugManager.DebugStringRight(currentGun.GetName());
+    }
+
+    public override void _Draw()
+    {
+        Vector2 aimDirection = GetAimDirection();
+        currentGun.DrawPreview(this, aimDirection);
     }
 
     /// <summary>
