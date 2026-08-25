@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 
 public class Player : Node2D
 {
@@ -10,6 +11,7 @@ public class Player : Node2D
     private const float MinHitSpeed = 300;
 
     // Movement
+    private const int playerRadius = 12;
     private const float Bounciness = 0.75f;
     private const float MinVertSpeed = 300;
     private const float MinSpeed = 30;
@@ -17,24 +19,41 @@ public class Player : Node2D
     private Vector2 velocity;
 
     // Guns
-    private FakeGun currentFakeGun;
+    private List<Gun> guns = new List<Gun>();
     private Gun currentGun;
-    private Gun nextGun;
+    private FakeGun fakeGun;
+    private int currentGunIndex;
     public override void _Ready()
     {
         GameManager.RegisterPlayerInstance(this);
     
         velocity = Vector2.Zero;
 
-        currentFakeGun = GetNode<FakeGun>("FakeGun");
-        currentGun = new Pistol();
-        nextGun = new Shotgun();
+        fakeGun = GetNode<FakeGun>("FakeGun");
+
+        currentGunIndex = 0;
+
+        guns.Add(new Pistol());
+        guns.Add(new Shotgun());
+        guns.Add(new Laser());
+
+        currentGun = guns[0];
     }
 
     public void Tick(float delta)
     {
-        RunPhysics(delta);
-        RunCollisions(delta);
+#if DEBUG
+        if (DebugManager.Ghosting)
+        {
+            RunGhosting(delta);
+        }
+        else
+#endif
+        {
+            RunPhysics(delta);
+            RunCollisions(delta);
+        }
+        
         TickWeapon(delta);
 
         Update();
@@ -54,25 +73,55 @@ public class Player : Node2D
         // Currently, just a straight line to the mouse
         Vector2 aimDirection = GetAimDirection();
 
-        if (Input.IsActionJustPressed("key_swapUp")
-            || Input.IsActionJustPressed("key_swapDown"))
-        {
-            (currentGun, nextGun) = (nextGun, currentGun);
-        }
+        if (Input.IsActionJustPressed("key_swapUp"))
+            SwapGun(true);
 
-        currentGun.TickGun(this, aimDirection, currentFakeGun, delta);
-        nextGun.TickGunPassive(delta);
-        
-        if (Input.IsActionJustPressed("key_fire"))
+        if (Input.IsActionJustPressed("key_swapDown"))
+            SwapGun(false);
+
+        for (int i = 0; i < guns.Count; i++)
         {
-            if (currentGun.CanFire())
+            if (i == currentGunIndex)
             {
-                Logger.Log("Fired Weapon", LogLevel.info);
-                currentGun.Fire( this, aimDirection );
+                guns[i].TickGun(this, aimDirection, fakeGun, delta);
+            }
+            else
+            {
+                guns[i].TickGunPassive(delta);
             }
         }
 
-        DebugManager.DebugStringRight(currentGun.GetName());
+        if (Input.IsActionJustPressed("key_fire") ||
+            (currentGun.heldWeapon && Input.IsActionPressed("key_fire")))
+        {
+            if (currentGun.CanFire())
+            {
+                currentGun.Fire( this, aimDirection, delta );
+            }
+        }
+
+        if (Input.IsActionJustReleased("key_fire"))
+        {
+            currentGun.ReleaseFire();
+        }
+
+        DebugManager.DebugStringRight($"{currentGun.GetName()}: {currentGun.CanFire()}");
+    }
+
+    public Gun GetCurrentGun()
+    {
+        return currentGun;
+    }
+
+    private void SwapGun(bool forward)
+    {
+        currentGunIndex += forward ? 1 : -1;
+        if (currentGunIndex < 0)
+            currentGunIndex += guns.Count;
+
+        currentGunIndex %= guns.Count;
+    
+        currentGun = guns[currentGunIndex];
     }
 
     public override void _Draw()
@@ -88,6 +137,13 @@ public class Player : Node2D
     {
         // TODO: Cache this, so it's not running multiple times a frame
         return (GetGlobalMousePosition() - Position).Normalized();
+    }
+
+    // Whenever player collides with bottom or an enemy
+    private void OnBounce()
+    {
+        // For now, just reload on touch
+        currentGun.Reload();
     }
 
     private void RunPhysics(float delta)
@@ -116,34 +172,33 @@ public class Player : Node2D
         float preDelta = Mathf.Inf;
         int collisionState = 0; // 0 - none, 1 - horizontal, 2 - bottom, 3 - top
 
-        // TODO: If two happen at once, and combine these together; find the first hit and do that one
-        if (testPosition.x > field.rightBound)
+        if (testPosition.x > field.rightBound - playerRadius)
         {
             Logger.Log("Hit Right", LogLevel.info, LogChannel.Movement);
 
             // Find cross delta
-            float dist = field.rightBound - Position.x;
+            float dist = field.rightBound - playerRadius - Position.x;
 
             preDelta = Utils.FirstPositiveQuadratic(acceleration.x / 2, velocity.x, -dist);
             collisionState = 1;
         }
-        else if (testPosition.x < field.leftBound)
+        else if (testPosition.x < field.leftBound + playerRadius)
         {
             Logger.Log("Hit Left", LogLevel.info, LogChannel.Movement);
 
             // Find cross delta
-            float dist = field.leftBound - Position.x;
+            float dist = field.leftBound + playerRadius - Position.x;
 
             preDelta = Utils.FirstPositiveQuadratic(acceleration.x / 2, velocity.x, -dist);
             collisionState = 1;
         }
         
-        if (testPosition.y > field.bottomBound)
+        if (testPosition.y > field.bottomBound - playerRadius)
         {
             Logger.Log("Hit Bottom", LogLevel.info, LogChannel.Movement);
 
             // Find cross delta
-            float dist = field.bottomBound - Position.y;
+            float dist = field.bottomBound - playerRadius - Position.y;
             // (vel.y + acc.y * alpha / 2) * alpha = dist
             // alpha^2 * acc.y / 2 + vel.y * alpha - dist = 0
             float newDelta = Utils.FirstPositiveQuadratic(acceleration.y / 2, velocity.y, -dist);
@@ -153,12 +208,12 @@ public class Player : Node2D
                 collisionState = 2;
             }
         }
-        else if (testPosition.y < field.topBound)
+        else if (testPosition.y < field.topBound + playerRadius)
         {
             Logger.Log("Hit Top", LogLevel.info, LogChannel.Movement);
 
             // Find cross delta
-            float dist = field.topBound - Position.y;
+            float dist = field.topBound + playerRadius - Position.y;
             float newDelta = Utils.FirstPositiveQuadratic(acceleration.y / 2, velocity.y, -dist);
             if (newDelta < preDelta)
             {
@@ -189,6 +244,9 @@ public class Player : Node2D
                 velocity.x = Mathf.Sign(velocity.x) * MinSpeed;
             break;
             case 2: // Bottom
+            
+            OnBounce();
+
             velocity.y *= -1;
 
             velocity.y *= Bounciness;
@@ -239,7 +297,25 @@ public class Player : Node2D
                         velocity = velocity / currentSpeed * MinHitSpeed;
                     }
                 }
+
+                int damage = hitEnemy.DealDamage(this);
+
+                // TODO: Move this into OnHit() function
+                health -= damage;
+                GameManager.GetUI().UpdateHealth(health / 3.0f);
+
+                OnBounce();
             }
         }
+    }
+
+    private void RunGhosting(float delta)
+    {
+        Vector2 movementInput = new Vector2(Input.GetAxis("key_left", "key_right"),
+            Input.GetAxis("key_up", "key_down"));
+    
+        movementInput = movementInput.Normalized();
+
+        Position += movementInput * delta * 250;
     }
 }

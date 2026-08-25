@@ -6,7 +6,7 @@ public abstract class Enemy : Node2D, HitboxOwner
     // In play
     private bool isAlive = true;
     private bool inPlay = true;
-    private int health = 5;
+    private float health = 5;
 
     // Leaving play
     float hurtTimer = 0;
@@ -35,17 +35,22 @@ public abstract class Enemy : Node2D, HitboxOwner
     public bool InPlay() { return inPlay; }
 
     // Damage
-    public virtual void TakeDamage( int damage, DamageType damageType = DamageType.Ballistic)
+    public virtual void TakeDamage( float damage, DamageType damageType = DamageType.Ballistic,
+        bool continuousDamage = false)
     {
-        GD.Print("HIT");
         health -= damage;
         if (health <= 0)
         {
             isAlive = false;
+            hurtTimer = 0.2f;
             OnDeath();
         }
-        hurtTimer = 0.2f;
+        else if (!continuousDamage)
+            hurtTimer = 0.2f;
     }
+
+    // Called when a player is hit by this
+    public virtual int DealDamage( Player player ) { return 1; }
 
     // Hitbox Owner interface
     public abstract void UpdateHitbox();

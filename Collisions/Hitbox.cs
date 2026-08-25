@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Runtime.Remoting.Messaging;
 using Godot;
 
@@ -5,7 +6,8 @@ public enum HitboxOwnerType
 {
     Enemy,
     Player,
-    Any
+    Any,
+    Invalid
 }
 
 public interface HitboxOwner
@@ -20,11 +22,21 @@ public abstract class Hitbox
 {
     public int lastUpdatedHitboxFrame = -1;
 
-    public HitboxOwner hitboxOwner;
-    public abstract float GetFirstRayHit(Vector2 start, Vector2 direction);
-    public abstract bool GetContainsHit(Vector2 testPosition);
-    public abstract Vector2 GetCenter();
+    protected HitboxOwner hitboxOwner;
+    public abstract (float, HitboxOwner) GetFirstRayHit(Vector2 start, Vector2 direction);
+    public abstract (bool, HitboxOwner) GetContainsHit(Vector2 testPosition);
     public abstract Vector2 GetNormal(Vector2 testPoint);
+    public void UpdateHitbox() { hitboxOwner.UpdateHitbox(); }
+    public HitboxOwnerType GetHitboxOwnerType()
+    {
+        if (hitboxOwner == null)
+        {
+            Logger.Log($"Hitbox {this} is missing a hitbox owner", LogLevel.error);
+            return HitboxOwnerType.Invalid;
+        }
+
+        return hitboxOwner.GetHitboxOwnerType();
+    }
 
 }
 
@@ -42,7 +54,7 @@ public class RectHitbox : Hitbox
         halfDimensions = inHalfDimensions;
     }
 
-    public override float GetFirstRayHit(Vector2 start, Vector2 direction)
+    public override (float, HitboxOwner) GetFirstRayHit(Vector2 start, Vector2 direction)
     {
         // Set center of ray to be at 0, 0
         Vector2 offsetCenter = center - start;
@@ -56,7 +68,7 @@ public class RectHitbox : Hitbox
             float hitTime = xHit / direction.x;
             // Valid hit that's within the bounds
             if (hitTime > 0 && Mathf.Abs(direction.y * hitTime - offsetCenter.y) <= halfDimensions.y)
-                return hitTime;
+                return (hitTime, hitboxOwner);
         }
 
         if (!Mathf.IsZeroApprox(direction.y))
@@ -65,19 +77,19 @@ public class RectHitbox : Hitbox
             float hitTime = yHit / direction.y;
 
             if (hitTime > 0 && Mathf.Abs(direction.x * hitTime - offsetCenter.x) <= halfDimensions.x)
-                return hitTime;
+                return (hitTime, hitboxOwner);
         }
         
-        return -1;
+        return (-1, hitboxOwner);
     }
 
-    public override bool GetContainsHit(Vector2 testPosition)
+    public override (bool, HitboxOwner) GetContainsHit(Vector2 testPosition)
     {
         Vector2 offsetCenter = testPosition - center;
-        return Mathf.Abs(offsetCenter.x) < halfDimensions.x && Mathf.Abs(offsetCenter.y) < halfDimensions.y;
+        return (Mathf.Abs(offsetCenter.x) < halfDimensions.x && Mathf.Abs(offsetCenter.y) < halfDimensions.y,
+            hitboxOwner);
     }
 
-    public override Vector2 GetCenter() { return center; }
     public override Vector2 GetNormal(Vector2 testPoint)
     {
         Vector2 offset = testPoint - center;
@@ -104,7 +116,7 @@ public class CircleHitbox : Hitbox
         radius = inRadius;
     }
 
-    public override float GetFirstRayHit(Vector2 start, Vector2 direction)
+    public override (float, HitboxOwner) GetFirstRayHit(Vector2 start, Vector2 direction)
     {
         // Set center of ray to be at 0, 0
         Vector2 offsetCenter = center - start;
@@ -112,26 +124,76 @@ public class CircleHitbox : Hitbox
         // (tx - a)^2 + (ty - b)^2 = r^2
         // (x^2+y^2)t^2 - (2xa + 2yb)t + (a^2 + b^2 - r^2) = 0
         // This only works since direction is normalized
-        return Utils.PositiveQuadraticIfPossible(direction.x * direction.x + direction.y * direction.y,
+        return (Utils.PositiveQuadraticIfPossible(direction.x * direction.x + direction.y * direction.y,
             -2 * direction.x * offsetCenter.x - 2 * direction.y * offsetCenter.y,
-            offsetCenter.x * offsetCenter.x + offsetCenter.y * offsetCenter.y - radius * radius);
+            offsetCenter.x * offsetCenter.x + offsetCenter.y * offsetCenter.y - radius * radius), hitboxOwner);
     }
 
-    public override bool GetContainsHit(Vector2 testPosition)
+    public override (bool, HitboxOwner) GetContainsHit(Vector2 testPosition)
     {
         
         Vector2 offsetCenter = testPosition - center;
         // Initial check to avoid length queries
         if (Mathf.Abs(offsetCenter.x) < radius && Mathf.Abs(offsetCenter.y) < radius)
         {
-            return offsetCenter.LengthSquared() < radius * radius;
+            return (offsetCenter.LengthSquared() < radius * radius, hitboxOwner);
         }
-        return false;
+        return (false, hitboxOwner);
     }
-
-    public override Vector2 GetCenter() { return center; }
     public override Vector2 GetNormal(Vector2 testPoint)
     {
         return (testPoint - center).Normalized();
+    }
+}
+
+// Hitbox consisting of multiple hitboxes
+public class CompoundHitbox : Hitbox
+{
+    private HashSet<Hitbox> hitboxes;
+
+    public CompoundHitbox( ref HashSet<Hitbox> hitboxes )
+    {
+        this.hitboxes = hitboxes;
+    }
+
+    public override (float, HitboxOwner) GetFirstRayHit(Vector2 start, Vector2 direction)
+    {
+        float firstHit = -1;
+        HitboxOwner outOwner = hitboxOwner;
+
+        foreach (Hitbox hitbox in hitboxes)
+        {
+            (float potentialHit, HitboxOwner potentialOwner) = hitbox.GetFirstRayHit(start, direction);
+            if (potentialHit > 0)
+            {
+                if (firstHit < 0 || potentialHit < firstHit)
+                {
+                    firstHit = potentialHit;
+                    outOwner = potentialOwner;
+                }
+            }
+        }
+
+        return (firstHit, outOwner);
+    }
+
+    public override (bool, HitboxOwner) GetContainsHit(Vector2 testPosition)
+    {
+        foreach (Hitbox hitbox in hitboxes)
+        {
+            (bool hit, HitboxOwner potentialOwner) = hitbox.GetContainsHit(testPosition);
+            if (hit)
+            {
+                return (true, potentialOwner);
+            }
+        }
+        return (false, hitboxOwner);
+    }
+
+    public override Vector2 GetNormal(Vector2 testPoint)
+    {
+        // TODO: This kind of sucks, assumes GetNormal() is right after any GetHits()
+        Logger.Log("Compound hitbox was directly queried for normal", LogLevel.error);
+        return Vector2.Up;
     }
 }

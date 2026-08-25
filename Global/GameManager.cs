@@ -53,6 +53,10 @@ public partial class GameManager : Node
             gameTime += trueTime;
             currentFrame++;
         }
+
+#if DEBUG
+        TickDebug(delta);
+#endif
     }
 
     public static int GetCurrentFrame()
@@ -71,11 +75,21 @@ public partial class GameManager : Node
     }
 
 
-    public void Tick(float delta)
+    private void Tick(float delta)
     {
         if (playerInstance != null)
             playerInstance.Tick(delta);
 
         enemyManager.Tick(delta);
+    }
+
+    private void TickDebug(float delta)
+    {
+        if (Input.IsActionJustPressed("debug_ghost"))
+        {
+            DebugManager.Ghosting = !DebugManager.Ghosting;
+            DebugManager.DebugStringMiddle(DebugManager.Ghosting ?
+                "GHOSTING" : "");
+        }
     }
 }

@@ -6,6 +6,8 @@ public class DebugManager: Control
     private RichTextLabel leftTopLabel;
     private RichTextLabel leftMiddleLabel;
     private RichTextLabel rightTopLabel;
+    
+    public static bool Ghosting;
     public override void _Ready()
     {   
         Instance = this;

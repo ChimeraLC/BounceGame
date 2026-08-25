@@ -56,16 +56,11 @@ public partial class CollisionManager
         HitboxOwner hitOwner = null;
 
         float potentialHit;
+        HitboxOwner potentialOwner;
         int currentFrame = GameManager.GetCurrentFrame();
         foreach ( Hitbox hitbox in Instance.hitboxes)
         {
-            if (hitbox.hitboxOwner == null)
-            {
-                Logger.Log("Hitbox {hitbox} has a null owner", LogLevel.error);
-                continue;
-            }
-
-            if (queryType != HitboxOwnerType.Any && hitbox.hitboxOwner.GetHitboxOwnerType() != queryType)
+            if (queryType != HitboxOwnerType.Any && hitbox.GetHitboxOwnerType() != queryType)
             {
                 continue;
             }
@@ -73,15 +68,15 @@ public partial class CollisionManager
             // Update hitbox position if necessary
             if (hitbox.lastUpdatedHitboxFrame != currentFrame)
             {
-                hitbox.hitboxOwner.UpdateHitbox();
+                hitbox.UpdateHitbox();
                 hitbox.lastUpdatedHitboxFrame = currentFrame;
             }
 
-            potentialHit = hitbox.GetFirstRayHit(start, direction);
+            (potentialHit, potentialOwner) = hitbox.GetFirstRayHit(start, direction);
             if (potentialHit > 0 && (firstHit < 0 || potentialHit < firstHit))
             {
                 firstHit = potentialHit;
-                hitOwner = hitbox.hitboxOwner;
+                hitOwner = potentialOwner;
             }
         }
 
@@ -94,13 +89,7 @@ public partial class CollisionManager
         int currentFrame = GameManager.GetCurrentFrame();
         foreach ( Hitbox hitbox in Instance.hitboxes)
         {
-            if (hitbox.hitboxOwner == null)
-            {
-                Logger.Log("Hitbox {hitbox} has a null owner", LogLevel.error);
-                continue;
-            }
-
-            if (queryType != HitboxOwnerType.Any && hitbox.hitboxOwner.GetHitboxOwnerType() != queryType)
+            if (queryType != HitboxOwnerType.Any && hitbox.GetHitboxOwnerType() != queryType)
             {
                 continue;
             }
@@ -108,13 +97,14 @@ public partial class CollisionManager
             // Update hitbox position if necessary
             if (hitbox.lastUpdatedHitboxFrame != currentFrame)
             {
-                hitbox.hitboxOwner.UpdateHitbox();
+                hitbox.UpdateHitbox();
                 hitbox.lastUpdatedHitboxFrame = currentFrame;
             }
 
-            if (hitbox.GetContainsHit(testPosition))
+            (bool hit, HitboxOwner potentialOwner) = hitbox.GetContainsHit(testPosition);
+            if (hit)
             {
-                return (true, hitbox.hitboxOwner);
+                return (hit, potentialOwner);
             }
         }
         return (false, null);

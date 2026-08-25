@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://Global/ColorNode.cs" type="Script" id=1]
+[ext_resource path="res://Enemies/Bosses/Intestines/IntestinesBody.cs" type="Script" id=2]
+
+[node name="IntestinesBody" type="Node2D"]
+script = ExtResource( 2 )
+
+[node name="Polygon2D" type="Polygon2D" parent="."]
+color = Color( 0.803922, 0.105882, 0.105882, 1 )
+polygon = PoolVector2Array( 32, 0, 16, 27.7, -16, 27.7, -32, 0, -16, -27.7, 16, -27.7 )
+script = ExtResource( 1 )
+colorType = 3

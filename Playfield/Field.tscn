@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://Playfield/Field.cs" type="Script" id=1]
+[ext_resource path="res://Global/ColorNode.cs" type="Script" id=2]
 
 [node name="Field" type="Node2D"]
 script = ExtResource( 1 )
@@ -9,12 +10,20 @@ script = ExtResource( 1 )
 position = Vector2( 0, 550 )
 color = Color( 0.72549, 0.72549, 0.72549, 1 )
 polygon = PoolVector2Array( 0, 0, 1024, 0, 1024, 50, 0, 50 )
+script = ExtResource( 2 )
 
 [node name="Right" type="Polygon2D" parent="."]
 position = Vector2( 724, 0 )
 color = Color( 0.72549, 0.72549, 0.72549, 1 )
 polygon = PoolVector2Array( 0, 0, 300, 0, 300, 600, 0, 600 )
+script = ExtResource( 2 )
 
 [node name="Left" type="Polygon2D" parent="."]
 color = Color( 0.72549, 0.72549, 0.72549, 1 )
 polygon = PoolVector2Array( 0, 0, 300, 0, 300, 600, 0, 600 )
+script = ExtResource( 2 )
+
+[node name="Background" type="Polygon2D" parent="."]
+z_index = -5
+color = Color( 0.109804, 0.109804, 0.109804, 1 )
+polygon = PoolVector2Array( 0, 0, 1024, 0, 1024, 600, 0, 600 )

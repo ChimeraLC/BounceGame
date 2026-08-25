@@ -10,9 +10,12 @@ public abstract class Gun
 {
     protected int remainingAmmo;
     protected float reloadTime;
-    public virtual bool CanFire() {return reloadTime <= 0;}
 
-    public abstract void Fire( Player firingPlayer, Vector2 aimDirection );
+    public bool heldWeapon {protected set; get; }
+    public virtual bool CanFire() {return reloadTime <= 0 && remainingAmmo > 0;}
+
+    public abstract void Fire( Player firingPlayer, Vector2 aimDirection, float delta );
+    public virtual void ReleaseFire() {}
 
     public virtual string GetName() { return "Invalid"; }
 
@@ -31,6 +34,8 @@ public abstract class Gun
             fakeGun.Rotation = Mathf.Atan(aimDirection.y / aimDirection.x);
         }
     }
+
+    public abstract void Reload();
 
     public virtual void TickGunPassive( float delta )
     {
@@ -51,6 +56,8 @@ public abstract class Gun
         (float secondHit, _) = CollisionManager.GetFirstHitboxRayhit(position, aimDirection, HitboxOwnerType.Enemy);
         if (secondHit >= 0)
             firstHit = Mathf.Min(firstHit, secondHit);
-        owner.DrawLine(Vector2.Zero, aimDirection * firstHit, Colors.White, 10);        
+        owner.DrawLine(Vector2.Zero, aimDirection * firstHit, Constants.colorLight, 4);        
     }
+
+    public virtual void DisplayAmmo( Control owner, Vector2 centerPosition ) {}
 }

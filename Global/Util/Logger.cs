@@ -19,6 +19,7 @@ public enum LogChannel
 {
     Default = LogLevel.debug, // Default will always display log level
     Movement = LogLevel.warn,
+    BossBehavior = LogLevel.warn,
 }
 
 public static class Logger
