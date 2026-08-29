@@ -121,6 +121,14 @@ public partial class CollisionManager
         Logger.Log($"Removing collsion hitbox {outHitbox}", LogLevel.info);
         Instance.hitboxes.Remove(outHitbox);
     }
+
+    public static void DrawHitboxes(Control drawOwner)
+    {
+        foreach (Hitbox hitbox in Instance.hitboxes)
+        {
+            hitbox.DrawHitbox(drawOwner);
+        }
+    }
 }
 
 public abstract class CollisionObstacle

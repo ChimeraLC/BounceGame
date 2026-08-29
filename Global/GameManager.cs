@@ -81,6 +81,7 @@ public partial class GameManager : Node
             playerInstance.Tick(delta);
 
         enemyManager.Tick(delta);
+        DebugManager.Tick(delta);
     }
 
     private void TickDebug(float delta)
@@ -91,5 +92,12 @@ public partial class GameManager : Node
             DebugManager.DebugStringMiddle(DebugManager.Ghosting ?
                 "GHOSTING" : "");
         }
+
+        if (Input.IsActionJustPressed("debug_hitbox"))
+        {
+            DebugManager.ToggleHitboxDebug();
+        }
     }
+
+
 }

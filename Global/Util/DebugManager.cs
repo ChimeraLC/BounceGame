@@ -8,6 +8,7 @@ public class DebugManager: Control
     private RichTextLabel rightTopLabel;
     
     public static bool Ghosting;
+    public static bool Hitboxes;
     public override void _Ready()
     {   
         Instance = this;
@@ -15,6 +16,14 @@ public class DebugManager: Control
         leftTopLabel = GetNode<RichTextLabel>("LeftTopLabel");
         leftMiddleLabel = GetNode<RichTextLabel>("LeftMiddleLabel");
         rightTopLabel = GetNode<RichTextLabel>("RightTopLabel");
+    }
+
+    public static void Tick(float delta)
+    {
+        if (Instance != null && Hitboxes)
+        {
+            Instance.Update();
+        }
     }
 
     public static void DebugStringTop(string message)
@@ -30,5 +39,19 @@ public class DebugManager: Control
     public static void DebugStringRight(string message)
     {
         Instance.rightTopLabel.Text = message;
+    }
+
+    public static void ToggleHitboxDebug()
+    {
+        Hitboxes = !Hitboxes;
+        Instance.Update();
+    }
+
+    public override void _Draw()
+    {
+        if (Hitboxes)
+        {
+            CollisionManager.DrawHitboxes(this);
+        }
     }
 }

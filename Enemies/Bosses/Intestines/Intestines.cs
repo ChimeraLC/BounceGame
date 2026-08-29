@@ -77,6 +77,17 @@ public class Intestines : Boss
         }
     }
 
+    // Returns the body position of a given offset
+    private Vector2 GetBodyPosition(float offset)
+    {
+        float radius = 150;
+
+        return new Vector2(
+            512 + Mathf.Cos(offset / radius) * radius,
+            300 + Mathf.Sin(offset / radius) * radius
+        );
+    }
+    
     private void DestroyBody(int index)
     {
         if (bodies.Count > index)
@@ -100,17 +111,6 @@ public class Intestines : Boss
                 bodies[i].offsetBump += bodySpacing;
             }
         }
-    }
-
-    // Returns the body position of a given offset
-    private Vector2 GetBodyPosition(float offset)
-    {
-        float radius = 150;
-
-        return new Vector2(
-            512 + Mathf.Cos(offset / radius) * radius,
-            300 + Mathf.Sin(offset / radius) * radius
-        );
     }
 
     public override void UpdateHitbox()

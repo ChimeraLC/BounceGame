@@ -38,6 +38,7 @@ public abstract class Hitbox
         return hitboxOwner.GetHitboxOwnerType();
     }
 
+    public abstract void DrawHitbox( Control drawOwner );
 }
 
 // TODO: Checks for if ray starts already within hitbox?
@@ -102,6 +103,11 @@ public class RectHitbox : Hitbox
             return Mathf.Sign(offset.y) * Vector2.Down;
         }
     }
+
+    public override void DrawHitbox(Control drawOwner)
+    {
+        drawOwner.DrawRect(new Rect2(center, halfDimensions * 2), Colors.Purple, false);
+    }
 }
 
 // Circle hitbox defined by its center and radius
@@ -143,6 +149,11 @@ public class CircleHitbox : Hitbox
     public override Vector2 GetNormal(Vector2 testPoint)
     {
         return (testPoint - center).Normalized();
+    }
+    
+    public override void DrawHitbox(Control drawOwner)
+    {
+        drawOwner.DrawArc(center, radius, 0, Mathf.Pi * 2, 32, Colors.Purple);
     }
 }
 
@@ -195,5 +206,13 @@ public class CompoundHitbox : Hitbox
         // TODO: This kind of sucks, assumes GetNormal() is right after any GetHits()
         Logger.Log("Compound hitbox was directly queried for normal", LogLevel.error);
         return Vector2.Up;
+    }
+    public override void DrawHitbox(Control drawOwner)
+    {
+        foreach (Hitbox hitbox in hitboxes)
+        {
+            hitbox.UpdateHitbox();
+            hitbox.DrawHitbox(drawOwner);
+        }
     }
 }
