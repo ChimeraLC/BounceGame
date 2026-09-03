@@ -162,9 +162,10 @@ public class CompoundHitbox : Hitbox
 {
     private HashSet<Hitbox> hitboxes;
 
-    public CompoundHitbox( ref HashSet<Hitbox> hitboxes )
+    public CompoundHitbox( HitboxOwner owner, ref HashSet<Hitbox> hitboxes )
     {
         this.hitboxes = hitboxes;
+        this.hitboxOwner = owner;
     }
 
     public override (float, HitboxOwner) GetFirstRayHit(Vector2 start, Vector2 direction)

@@ -17,6 +17,7 @@ public class Player : Node2D
     private const float MinSpeed = 30;
     private const float HorControl = 100.0f;
     private Vector2 velocity;
+    private Vector2 preframe; // Position at start of frame
 
     // Guns
     private List<Gun> guns = new List<Gun>();
@@ -148,6 +149,8 @@ public class Player : Node2D
 
     private void RunPhysics(float delta)
     {
+        preframe = Position;
+
         if (delta <= 0)
         {
             Logger.Log("RunPhysics recieved a negative delta", LogLevel.error);
@@ -279,8 +282,8 @@ public class Player : Node2D
             {
                 hitTimer = InvulTimer;
 
-                // Temp bounce code TODO: Maybe this should be run based on preframe position
-                Vector2 normal = hitboxOwner.GetHitbox().GetNormal(Position);
+                // Temp bounce code; uses preframe to prevent going too deep into hitbox TODO: Actuall collision math? Imagine
+                Vector2 normal = hitboxOwner.GetHitbox().GetNormal(preframe);
                 Vector2 projection = velocity.Dot(normal) * normal;
                 velocity -= 2 * projection;
 

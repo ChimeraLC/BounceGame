@@ -29,6 +29,11 @@ public class IntestinesBody : Enemy
         return hitbox;
     }
 
+    public override void TakeDamage(float damage, DamageType damageType = DamageType.Ballistic, bool continuousDamage = false)
+    {
+        owner.DestroyBody(index);
+    }
+
     protected override void OnDeath()
     {
         // Hitbox is contained in main intestines compound hitbox

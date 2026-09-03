@@ -24,6 +24,6 @@ polygon = PoolVector2Array( 0, 0, 300, 0, 300, 600, 0, 600 )
 script = ExtResource( 2 )
 
 [node name="Background" type="Polygon2D" parent="."]
-z_index = -5
+z_index = -100
 color = Color( 0.109804, 0.109804, 0.109804, 1 )
 polygon = PoolVector2Array( 0, 0, 1024, 0, 1024, 600, 0, 600 )
