@@ -9,7 +9,7 @@ public enum ColorType
     Enemy
 }
 
-public static class Constants
+public static class Consts
 {
     public static float Gravity = 180;
     public static Vector2 scaleFlipX = new Vector2(-1, 1);
@@ -42,4 +42,8 @@ public static class Constants
     {
         return colorMap[colorType];
     }
+
+    // Derived
+    public static int FieldWidth = FieldRight - FieldLeft;
+    public static int FieldHeight = FieldBottom - FieldTop;
 }

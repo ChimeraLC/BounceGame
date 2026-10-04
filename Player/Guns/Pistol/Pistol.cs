@@ -7,14 +7,14 @@ public class Pistol : Gun
     {
         remainingAmmo = 6;
     }
-    public override string GetName() { return "Pistol"; }
+    public override string GetName() { return "Revolver"; }
 
     public override void Fire( Player firingPlayer, Vector2 aimDirection, float delta )
     {
         firingPlayer.ImpulseVelocity(aimDirection * -250);
 
         remainingAmmo -= 1;
-        reloadTime = 0.75f;
+        reloadTime = 0.5f;
         if (remainingAmmo <= 0)
         {
             
@@ -42,7 +42,7 @@ public class Pistol : Gun
             float angle = i * Mathf.Pi / 3;
             Vector2 offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * 80;
 
-            owner.DrawRect(new Rect2(centerPosition + offset, new Vector2(40, 40)), Constants.colorDark);
+            owner.DrawRect(new Rect2(centerPosition + offset, new Vector2(40, 40)), Consts.colorDark);
         }
     }
 }

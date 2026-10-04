@@ -1,6 +1,6 @@
 using Godot;
 
-public static class Utils
+public static partial class Utils
 {
     /// <summary>
     /// Returns smallest positive solution to quadratic ax^2 + bx + c = 0

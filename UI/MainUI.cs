@@ -11,11 +11,11 @@ public class MainUI : Control
         GameManager.RegisterUIInstance(this);
     
         healthDisplay = GetNode<ColorRect>("HealthDisplay");
-        healthDisplay.Color = Constants.GetColor(ColorType.Dark);
+        healthDisplay.Color = Consts.GetColor(ColorType.Dark);
         
         centerLabel = GetNode<Label>("CenterLabel");
 
-        SetSize(new Vector2(Constants.ScreenWidth, Constants.ScreenHeight));
+        SetSize(new Vector2(Consts.ScreenWidth, Consts.ScreenHeight));
     }
 
     public void UpdateHealth(float healthAmount)

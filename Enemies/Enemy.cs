@@ -13,6 +13,7 @@ public abstract class Enemy : Node2D, HitboxOwner
 
     EnemyManager enemyManager;
 
+
     public virtual void Tick(float delta)
     {
         // Generic !isAlive -> !inPlay setup
@@ -21,7 +22,11 @@ public abstract class Enemy : Node2D, HitboxOwner
         {
             inPlay = false;
         }
+
+        TickMain(delta);
     }
+
+    protected virtual void TickMain(float delta) {}
 
     public override void _Ready()
     {
@@ -29,7 +34,8 @@ public abstract class Enemy : Node2D, HitboxOwner
         inPlay = true;
 
         // TODO: Should be handled by enemy manager spawning code
-        GameManager.Instance.enemyManager.RegisterEnemy(this);        
+        enemyManager = GameManager.Instance.enemyManager;
+        enemyManager.RegisterEnemy(this);        
     }
 
     public bool InPlay() { return inPlay; }
@@ -56,6 +62,11 @@ public abstract class Enemy : Node2D, HitboxOwner
     public abstract void UpdateHitbox();
     public abstract Hitbox GetHitbox();
     public HitboxOwnerType GetHitboxOwnerType() { return HitboxOwnerType.Enemy;}
+
+    // Spawning behavior
+
+    // Gets position enemy should be placed at by enemy manager
+    public virtual Vector2 GetSpawnpoint() { return GlobalPosition; }
 
     // Private stuff?
     protected abstract void OnDeath();

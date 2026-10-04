@@ -1,7 +1,7 @@
 using Godot;
 
 // Basic square enemy
-public partial class BasicEnemy : Enemy
+public partial class BasicRectEnemy : Enemy
 {
     RectHitbox hitbox;
 

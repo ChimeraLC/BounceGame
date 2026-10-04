@@ -65,6 +65,7 @@ public class Intestines : Boss
         hitboxSet.Add(newBody.GetHitbox());
     }
 
+    // Completely unique logic
     public override void Tick(float delta)
     {
 #if DEBUG
@@ -81,7 +82,6 @@ public class Intestines : Boss
         if (Input.IsActionJustPressed("debug_action"))
         {
             GenBodyPosition();
-            //DestroyBody(2);
         }
 #endif   
 
@@ -120,6 +120,7 @@ public class Intestines : Boss
     private void GenBodyPosition()
     {
         // Select two points along different sides, and then the arc connecting them
+        // 0 - left, 1 - bottom, 2 - right
         int skipped = rand.Next(3);
 
         int side1 = skipped == 0 ? 1 : 0;
@@ -129,7 +130,7 @@ public class Intestines : Boss
         Vector2 point2 = GenSidePoint(side2);
 
         // Preventing small corner paths
-        float middle = (Constants.FieldLeft + Constants.FieldRight) / 2;
+        float middle = (Consts.FieldLeft + Consts.FieldRight) / 2;
         if (skipped == 2 && point2.x < middle - 75)
             point2.x = 2 * middle - point2.x; // Mirror to longer path
 
@@ -184,14 +185,14 @@ public class Intestines : Boss
         switch (side)
         {
             case 0:
-                return new Vector2(Constants.FieldLeft - padding / 3,
-                    rand.Next(Constants.FieldTop + padding * 2, Constants.FieldBottom - padding));
+                return new Vector2(Consts.FieldLeft - padding / 3,
+                    rand.Next(Consts.FieldTop + padding * 2, Consts.FieldBottom - padding));
             case 1:
-                return new Vector2(rand.Next(Constants.FieldLeft + padding, Constants.FieldRight - padding),
-                    Constants.FieldBottom + padding / 3);
+                return new Vector2(rand.Next(Consts.FieldLeft + padding, Consts.FieldRight - padding),
+                    Consts.FieldBottom + padding / 3);
             case 2:
-                return new Vector2(Constants.FieldRight + padding / 3,
-                    rand.Next(Constants.FieldTop + padding, Constants.FieldBottom - padding));
+                return new Vector2(Consts.FieldRight + padding / 3,
+                    rand.Next(Consts.FieldTop + padding, Consts.FieldBottom - padding));
         }
 
         return Vector2.Zero;

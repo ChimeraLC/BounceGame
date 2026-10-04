@@ -35,8 +35,8 @@ public class Player : Node2D
         currentGunIndex = 0;
 
         guns.Add(new Pistol());
-        guns.Add(new Shotgun());
-        guns.Add(new Laser());
+        // guns.Add(new Shotgun());
+        // guns.Add(new Laser());
 
         currentGun = guns[0];
     }
@@ -160,7 +160,7 @@ public class Player : Node2D
         Field field = GameManager.GetField(); // Getting each frame is probably slow
 
         // Acceleration should be constant during a single runPhysics call
-        Vector2 acceleration = Vector2.Down * Constants.Gravity;
+        Vector2 acceleration = Vector2.Down * Consts.Gravity;
         
         // acceleration += HorControl * Vector2.Right * Input.GetAxis("key_left", "key_right");
     

@@ -25,12 +25,12 @@ public abstract class Gun
 
         if (aimDirection.x > 0)
         {
-            fakeGun.Scale = Constants.scaleNormal;
+            fakeGun.Scale = Consts.scaleNormal;
             fakeGun.Rotation = Mathf.Atan(aimDirection.y / aimDirection.x);
         }
         else
         {
-            fakeGun.Scale = Constants.scaleFlipX;
+            fakeGun.Scale = Consts.scaleFlipX;
             fakeGun.Rotation = Mathf.Atan(aimDirection.y / aimDirection.x);
         }
     }
@@ -56,7 +56,7 @@ public abstract class Gun
         (float secondHit, _) = CollisionManager.GetFirstHitboxRayhit(position, aimDirection, HitboxOwnerType.Enemy);
         if (secondHit >= 0)
             firstHit = Mathf.Min(firstHit, secondHit);
-        owner.DrawLine(Vector2.Zero, aimDirection * firstHit, Constants.colorLight, 4);        
+        owner.DrawLine(Vector2.Zero, aimDirection * firstHit, Consts.colorLight, 4);        
     }
 
     public virtual void DisplayAmmo( Control owner, Vector2 centerPosition ) {}

@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=2]
 
-[ext_resource path="res://Global/Util/DebugManager.cs" type="Script" id=1]
+[ext_resource path="res://Global/Debug/DebugManager.cs" type="Script" id=1]
 
 [node name="DebugManager" type="Control"]
 anchor_right = 1.0

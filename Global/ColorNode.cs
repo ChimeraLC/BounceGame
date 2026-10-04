@@ -8,7 +8,7 @@ public class ColorNode : Polygon2D
     public ColorType colorType; 
     public override void _Ready()
     {
-       Color = Constants.GetColor(colorType);
+       Color = Consts.GetColor(colorType);
     }
 
 //  public override void _Process(float delta)

@@ -62,6 +62,6 @@ public class Laser : Gun
 
     public override void DisplayAmmo(Control owner, Vector2 centerPosition)
     {
-        owner.DrawRect(new Rect2(centerPosition, new Vector2(60, 80 * remainingCharge / maxCharge)), Constants.colorDark);
+        owner.DrawRect(new Rect2(centerPosition, new Vector2(60, 80 * remainingCharge / maxCharge)), Consts.colorDark);
     }
 }

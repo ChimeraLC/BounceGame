@@ -73,7 +73,7 @@ public class Shotgun : Gun
             float angle = i * Mathf.Pi;
             Vector2 offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * 30;
 
-            owner.DrawRect(new Rect2(centerPosition + offset, new Vector2(40, 80)), Constants.colorDark);
+            owner.DrawRect(new Rect2(centerPosition + offset, new Vector2(40, 80)), Consts.colorDark);
         }
     }
 }
