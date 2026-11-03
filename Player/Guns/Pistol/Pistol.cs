@@ -32,7 +32,7 @@ public class Pistol : Gun
 
     public override void Reload()
     {
-        remainingAmmo = Mathf.Min(remainingAmmo + 2, 6);
+        remainingAmmo = Mathf.Min(remainingAmmo + 3, 6);
     }
 
     public override void DisplayAmmo(Control owner, Vector2 centerPosition)
@@ -40,9 +40,9 @@ public class Pistol : Gun
         for (int i = 0; i < remainingAmmo; i++)
         {
             float angle = i * Mathf.Pi / 3;
-            Vector2 offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * 80;
+            Vector2 offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * 30;
 
-            owner.DrawRect(new Rect2(centerPosition + offset, new Vector2(40, 40)), Consts.colorDark);
+            owner.DrawRect(new Rect2(centerPosition + offset, new Vector2(15, 15)), Consts.colorDark);
         }
     }
 }

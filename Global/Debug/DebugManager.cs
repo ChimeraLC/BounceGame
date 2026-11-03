@@ -1,18 +1,20 @@
+using System.Collections.Generic;
 using Godot;
 
-public class DebugManager: Control
+public partial class DebugManager: Control
 {
     public static DebugManager Instance { get; private set; }
     private RichTextLabel leftTopLabel;
     private RichTextLabel leftMiddleLabel;
     private RichTextLabel rightTopLabel;
+    private Label centerLabel;
     
     public static bool Ghosting;
-    public static bool Hitboxes;
     public override void _Ready()
     {   
         Instance = this;
 
+        centerLabel = GetNode<Label>("CenterLabel");
         leftTopLabel = GetNode<RichTextLabel>("LeftTopLabel");
         leftMiddleLabel = GetNode<RichTextLabel>("LeftMiddleLabel");
         rightTopLabel = GetNode<RichTextLabel>("RightTopLabel");
@@ -20,10 +22,16 @@ public class DebugManager: Control
 
     public static void Tick(float delta)
     {
-        if (Instance != null && Hitboxes)
-        {
+#if DEBUG
+        if (Instance != null)
             Instance.Update();
-        }
+#endif // #if DEBUG
+    
+    }
+
+    public static void DebugStringCenter(string message)
+    {
+        Instance.centerLabel.Text = message;
     }
 
     public static void DebugStringTop(string message)
@@ -41,15 +49,9 @@ public class DebugManager: Control
         Instance.rightTopLabel.Text = message;
     }
 
-    public static void ToggleHitboxDebug()
-    {
-        Hitboxes = !Hitboxes;
-        Instance.Update();
-    }
-
     public override void _Draw()
     {
-        if (Hitboxes)
+        if (CheckFlag(DebugFlag.DrawUnitHitboxes))
         {
             CollisionManager.DrawHitboxes(this);
         }

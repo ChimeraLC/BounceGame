@@ -9,10 +9,13 @@ public class Field : Node2D
     public float topBound { get; private set; }
     public override void _Ready()
     { 
-        leftBound = 300;
-        rightBound = 724;
-        bottomBound = 550;
-        topBound = 0;
+        leftBound = Consts.FieldLeft;
+        rightBound = Consts.FieldRight;
+        bottomBound = Consts.FieldBottom;
+        topBound = Consts.FieldTop;
+
+        // Set regions
+        UpdateBounds();
 
         GameManager.RegisterFieldInstance(this);
 
@@ -21,6 +24,11 @@ public class Field : Node2D
         CollisionManager.AddCollisionObstacle(new VertAxisCollision(rightBound));
         CollisionManager.AddCollisionObstacle(new HorAxisCollision(topBound));
         CollisionManager.AddCollisionObstacle(new HorAxisCollision(bottomBound));
+    }
+
+    private void UpdateBounds()
+    {
+        // TODO: Resize polygon bounds to match bounds
     }
 
 }

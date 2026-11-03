@@ -23,10 +23,20 @@ public abstract class Hitbox
     public int lastUpdatedHitboxFrame = -1;
 
     protected HitboxOwner hitboxOwner;
+    /// <summary> Returns distance a given ray intersects this hitbox at. -1 if no hit </summary>
     public abstract (float, HitboxOwner) GetFirstRayHit(Vector2 start, Vector2 direction);
+    /// <summary> Returns if the given spot lies within the hitbox </summary>
     public abstract (bool, HitboxOwner) GetContainsHit(Vector2 testPosition);
+    /// <summary> Gets normal of hitbox at given point </summary>
     public abstract Vector2 GetNormal(Vector2 testPoint);
-    public void UpdateHitbox() { hitboxOwner.UpdateHitbox(); }
+    /// <summary> Updates position of hitbox </summary>
+    public void UpdateHitbox() { 
+        if (lastUpdatedHitboxFrame != GameManager.CurrentFrame)
+        {
+            hitboxOwner.UpdateHitbox(); 
+            lastUpdatedHitboxFrame = GameManager.CurrentFrame;
+        }
+    }
     public HitboxOwnerType GetHitboxOwnerType()
     {
         if (hitboxOwner == null)
@@ -38,7 +48,87 @@ public abstract class Hitbox
         return hitboxOwner.GetHitboxOwnerType();
     }
 
+    public HitboxOwner GetHitboxOwner() { return hitboxOwner; }
+
     public abstract void DrawHitbox( Control drawOwner );
+
+
+    /// <summary> Returns if this hitbox overlaps the other given hibox </summary>
+    public bool OverlapsHitbox(Hitbox otherHitbox) { return HitboxesOverlap(this, otherHitbox); }
+    public static bool HitboxesOverlap(Hitbox hitbox1, Hitbox hitbox2)
+    {
+        // TODO: Cleanup; It's a bit messy
+        
+        // Compound cases
+        if (hitbox1 is CompoundHitbox compoundHitbox)
+        {
+            foreach (Hitbox subHitbox in compoundHitbox.GetHitboxes())
+            {
+                if (HitboxesOverlap(subHitbox, hitbox2))
+                    return true;
+            }
+            return false;
+        }
+        if (hitbox2 is CompoundHitbox compoundHitbox2)
+        {
+            foreach (Hitbox subHitbox in compoundHitbox2.GetHitboxes())
+            {
+                if (HitboxesOverlap(hitbox1, subHitbox))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        if (hitbox1 is RectHitbox rectHitbox)
+        {
+            if (hitbox2 is RectHitbox rectHitbox2)
+            {
+                return RectRectOverlap(rectHitbox, rectHitbox2);
+            }
+            else if (hitbox2 is CircleHitbox circHitbox)
+            {
+                return RectCircOverlap(rectHitbox, circHitbox);
+            }
+        }
+        else if (hitbox1 is CircleHitbox circHitbox)
+        {
+            if (hitbox2 is RectHitbox rectHitbox2)
+            {
+                return RectCircOverlap(rectHitbox2, circHitbox);
+            }
+            else if (hitbox2 is CircleHitbox circHitbox2)
+            {
+                return CircCircOverlap(circHitbox, circHitbox2);
+            }
+        }
+
+        Logger.Log("Recieved unsuported hitbox types in HitboxesOverlap()", LogLevel.error);
+        return false;
+    }
+
+    public static bool RectRectOverlap(RectHitbox hitbox1, RectHitbox hitbox2)
+    {
+        return Mathf.Abs(hitbox1.center.x - hitbox2.center.x) <= hitbox1.halfDimensions.x + hitbox2.halfDimensions.x
+        && Mathf.Abs(hitbox1.center.y - hitbox2.center.y) <= hitbox1.halfDimensions.y + hitbox2.halfDimensions.y;
+    }
+
+    public static bool RectCircOverlap(RectHitbox hitbox1, CircleHitbox hitbox2)
+    {
+        Vector2 closest = new Vector2(
+            Mathf.Min(hitbox1.center.x + hitbox1.halfDimensions.x, Mathf.Max(hitbox1.center.x - hitbox1.halfDimensions.x, hitbox2.center.x)),
+            Mathf.Min(hitbox1.center.y + hitbox1.halfDimensions.y, Mathf.Max(hitbox1.center.y - hitbox1.halfDimensions.y, hitbox2.center.y))
+        );
+
+        return (closest - hitbox2.center).LengthSquared() <= hitbox2.radius * hitbox2.radius;
+    }
+
+    public static bool CircCircOverlap(CircleHitbox hitbox1, CircleHitbox hitbox2)
+    {
+        return (hitbox1.center - hitbox2.center).LengthSquared() 
+            < (hitbox1.radius + hitbox2.radius) * (hitbox1.radius + hitbox2.radius);
+    }
 }
 
 // TODO: Checks for if ray starts already within hitbox?
@@ -53,6 +143,7 @@ public class RectHitbox : Hitbox
         hitboxOwner = inOwner;
         center = inCenter;
         halfDimensions = inHalfDimensions;
+        CollisionManager.AddHitbox(this);
     }
 
     public override (float, HitboxOwner) GetFirstRayHit(Vector2 start, Vector2 direction)
@@ -106,7 +197,7 @@ public class RectHitbox : Hitbox
 
     public override void DrawHitbox(Control drawOwner)
     {
-        drawOwner.DrawRect(new Rect2(center, halfDimensions * 2), Colors.Purple, false);
+        drawOwner.DrawRect(new Rect2(center - halfDimensions, halfDimensions * 2), Colors.Purple, false);
     }
 }
 
@@ -120,6 +211,7 @@ public class CircleHitbox : Hitbox
         hitboxOwner = inOwner;
         center = inCenter;
         radius = inRadius;
+        CollisionManager.AddHitbox(this);
     }
 
     public override (float, HitboxOwner) GetFirstRayHit(Vector2 start, Vector2 direction)
@@ -160,13 +252,16 @@ public class CircleHitbox : Hitbox
 // Hitbox consisting of multiple hitboxes
 public class CompoundHitbox : Hitbox
 {
-    private HashSet<Hitbox> hitboxes;
+    protected HashSet<Hitbox> hitboxes;
 
     public CompoundHitbox( HitboxOwner owner, ref HashSet<Hitbox> hitboxes )
     {
         this.hitboxes = hitboxes;
         this.hitboxOwner = owner;
+        CollisionManager.AddHitbox(this);
     }
+
+    public HashSet<Hitbox> GetHitboxes() { return hitboxes; }
 
     public override (float, HitboxOwner) GetFirstRayHit(Vector2 start, Vector2 direction)
     {

@@ -40,13 +40,13 @@ public partial class CollisionManager
 
     public static void AddCollisionObstacle(CollisionObstacle inObstacle)
     {
-        Logger.Log($"Adding collision obstacle {inObstacle}", LogLevel.info);
+        Logger.Log($"Adding collision obstacle {inObstacle}", LogLevel.debug);
         Instance.collisionObstacles.Add(inObstacle);
     }
 
     public static void RemoveCollisionObstacle(CollisionObstacle outObstacle)
     {
-        Logger.Log($"Removing collsion obstacle {outObstacle}", LogLevel.info);
+        Logger.Log($"Removing collsion obstacle {outObstacle}", LogLevel.debug);
         Instance.collisionObstacles.Remove(outObstacle);
     }
 
@@ -57,7 +57,6 @@ public partial class CollisionManager
 
         float potentialHit;
         HitboxOwner potentialOwner;
-        int currentFrame = GameManager.GetCurrentFrame();
         foreach ( Hitbox hitbox in Instance.hitboxes)
         {
             if (queryType != HitboxOwnerType.Any && hitbox.GetHitboxOwnerType() != queryType)
@@ -66,11 +65,7 @@ public partial class CollisionManager
             }
 
             // Update hitbox position if necessary
-            if (hitbox.lastUpdatedHitboxFrame != currentFrame)
-            {
-                hitbox.UpdateHitbox();
-                hitbox.lastUpdatedHitboxFrame = currentFrame;
-            }
+            hitbox.UpdateHitbox();
 
             (potentialHit, potentialOwner) = hitbox.GetFirstRayHit(start, direction);
             if (potentialHit > 0 && (firstHit < 0 || potentialHit < firstHit))
@@ -86,7 +81,6 @@ public partial class CollisionManager
     // Returns a hitbox owner if it overlaps with the position; doesn't test closeness
     public static (bool, HitboxOwner) GetContainsHit(Vector2 testPosition, HitboxOwnerType queryType = HitboxOwnerType.Any)
     {
-        int currentFrame = GameManager.GetCurrentFrame();
         foreach ( Hitbox hitbox in Instance.hitboxes)
         {
             if (queryType != HitboxOwnerType.Any && hitbox.GetHitboxOwnerType() != queryType)
@@ -94,12 +88,8 @@ public partial class CollisionManager
                 continue;
             }
 
-            // Update hitbox position if necessary
-            if (hitbox.lastUpdatedHitboxFrame != currentFrame)
-            {
-                hitbox.UpdateHitbox();
-                hitbox.lastUpdatedHitboxFrame = currentFrame;
-            }
+            // Update hitbox position
+            hitbox.UpdateHitbox();
 
             (bool hit, HitboxOwner potentialOwner) = hitbox.GetContainsHit(testPosition);
             if (hit)
@@ -110,6 +100,29 @@ public partial class CollisionManager
         return (false, null);
     } 
 
+    public static (bool, HitboxOwner) GetOverlapsHit(Hitbox testHitbox, HitboxOwnerType queryType = HitboxOwnerType.Any)
+    {
+        testHitbox.UpdateHitbox();
+        foreach ( Hitbox hitbox in Instance.hitboxes)
+        {
+            if (hitbox == testHitbox || queryType != HitboxOwnerType.Any && hitbox.GetHitboxOwnerType() != queryType)
+            {
+                continue;
+            }
+
+            // Update hitbox position
+            hitbox.UpdateHitbox();
+
+            bool hit = hitbox.OverlapsHitbox(testHitbox);
+            if (hit)
+            {
+                return (hit, hitbox.GetHitboxOwner());
+            }
+        }
+        return (false, null);
+    }
+
+    // TODO: Somehow, the register unregister should be automatic
     public static void AddHitbox(Hitbox inHitbox)
     {
         Logger.Log($"Adding collision obstacle {inHitbox}", LogLevel.info);
@@ -126,6 +139,7 @@ public partial class CollisionManager
     {
         foreach (Hitbox hitbox in Instance.hitboxes)
         {
+            hitbox.UpdateHitbox();
             hitbox.DrawHitbox(drawOwner);
         }
     }

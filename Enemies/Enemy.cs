@@ -1,3 +1,4 @@
+using System;
 using System.Security.Cryptography.X509Certificates;
 using Godot;
 
@@ -6,27 +7,33 @@ public abstract class Enemy : Node2D, HitboxOwner
     // In play
     private bool isAlive = true;
     private bool inPlay = true;
-    private float health = 5;
+    protected float health = 5;
 
     // Leaving play
     float hurtTimer = 0;
 
     EnemyManager enemyManager;
 
+    protected static Random rand = new Random();
 
     public virtual void Tick(float delta)
     {
         // Generic !isAlive -> !inPlay setup
-        hurtTimer = Mathf.Max(0, hurtTimer - delta);
-        if (!isAlive && hurtTimer <= 0)
-        {
-            inPlay = false;
-        }
+        TickHurt(delta);
 
         TickMain(delta);
     }
 
     protected virtual void TickMain(float delta) {}
+
+    protected virtual void TickHurt(float delta)
+    {
+        hurtTimer = Mathf.Max(0, hurtTimer - delta);
+        if (!isAlive && hurtTimer <= 0)
+        {
+            inPlay = false;
+        }
+    }
 
     public override void _Ready()
     {
@@ -56,7 +63,7 @@ public abstract class Enemy : Node2D, HitboxOwner
     }
 
     // Called when a player is hit by this
-    public virtual int DealDamage( Player player ) { return 1; }
+    public virtual int DealContactDamage( Player player ) { return 1; }
 
     // Hitbox Owner interface
     public abstract void UpdateHitbox();

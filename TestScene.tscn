@@ -5,7 +5,7 @@
 [ext_resource path="res://Global/Debug/DebugManager.tscn" type="PackedScene" id=5]
 [ext_resource path="res://UI/MainUI.tscn" type="PackedScene" id=6]
 
-[node name="Node2D" type="Node2D"]
+[node name="World" type="Node2D"]
 
 [node name="ControlLayer" type="Node2D" parent="."]
 z_index = 100

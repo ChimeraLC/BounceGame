@@ -3,11 +3,11 @@ using System;
 
 public enum FieldEdge
 {
-    None = 0,
-    Left = 1 << 0,
-    Bottom = 1 << 1,
-    Right = 1 << 2,
-    Top = 1 << 3,
+    None = 1 << 0,
+    Left = 1 << 1,
+    Bottom = 1 << 2,
+    Right = 1 << 3,
+    Top = 1 << 4,
 }
 
 public static partial class Utils
@@ -18,6 +18,7 @@ public static partial class Utils
     *  distance from a corner. Side padding is distance from sides.
     *  Edge is bitmask of all allowed sides.
     */
+    // TODO: Version that equalizes probability across size
     public static (Vector2, FieldEdge) GenerateRandomEdgepoint( int cornerPadding,
         int sidePadding, FieldEdge edges = FieldEdge.Left | FieldEdge.Right | FieldEdge.Top | FieldEdge.Bottom)
     {
@@ -69,8 +70,8 @@ public static partial class Utils
           case FieldEdge.Bottom:
             cornerPadding = Math.Min(cornerPadding, Consts.FieldWidth / 2 - 1);
             int xPos = rand.Next(Consts.FieldLeft + cornerPadding, Consts.FieldRight - cornerPadding);
-            return new Vector2( edge == FieldEdge.Top ? Consts.FieldTop + sidePadding :
-                Consts.FieldBottom - sidePadding, xPos);
+            return new Vector2( xPos, edge == FieldEdge.Top ? Consts.FieldTop + sidePadding :
+                Consts.FieldBottom - sidePadding);
         }
 
         Logger.Log("GenerateEdgepoint() given an invalid side", LogLevel.error);

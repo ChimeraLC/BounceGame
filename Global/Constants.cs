@@ -19,10 +19,10 @@ public static class Consts
     public static int ScreenWidth = 1024;
 
     // Field
-    public static int FieldLeft = 300;
-    public static int FieldRight = 724;
+    public static int FieldLeft = 120;
+    public static int FieldRight = 904;
     public static int FieldTop = 0;
-    public static int FieldBottom = 550;
+    public static int FieldBottom = 520;
 
     // Colors
     public static Color colorLight = Color.Color8(185, 185, 185);

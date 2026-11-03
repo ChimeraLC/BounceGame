@@ -24,7 +24,7 @@ public enum LogChannel
 
 public static class Logger
 {
-    public static void Log(string message, LogLevel level, LogChannel channel = LogChannel.Default)
+    public static void Log(string message, LogLevel level = LogLevel.info, LogChannel channel = LogChannel.Default)
     {
         if (level >= (LogLevel) channel)
         {

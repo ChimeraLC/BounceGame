@@ -42,8 +42,6 @@ public class Intestines : Boss
         hitboxSet = new HashSet<Hitbox>();
         compoundHitbox = new CompoundHitbox(this, ref hitboxSet);
 
-        CollisionManager.AddHitbox(compoundHitbox);
-
         // Create bodies
         for (int i = 0; i < 10; i++)
         {

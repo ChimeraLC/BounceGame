@@ -37,7 +37,7 @@ public class MainUI : Control
 
     public override void _Draw()
     {
-        GameManager.GetPlayer().GetCurrentGun().DisplayAmmo( this, new Vector2(850, 120));
+        Player.Instance.GetCurrentGun().DisplayAmmo( this, new Vector2(950, 80));
     }
 
     public void DisplayCenterText(string text, float duration = 5)

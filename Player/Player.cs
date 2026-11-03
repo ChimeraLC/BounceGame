@@ -2,8 +2,9 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-public class Player : Node2D
+public class Player : Node2D, HitboxOwner
 {
+    public static Player Instance {get; private set;}
     // Health
     private int health = 3;
     private const float InvulTimer = 3;
@@ -19,6 +20,8 @@ public class Player : Node2D
     private Vector2 velocity;
     private Vector2 preframe; // Position at start of frame
 
+    private RectHitbox hitbox;
+
     // Guns
     private List<Gun> guns = new List<Gun>();
     private Gun currentGun;
@@ -26,9 +29,11 @@ public class Player : Node2D
     private int currentGunIndex;
     public override void _Ready()
     {
-        GameManager.RegisterPlayerInstance(this);
-    
+        Instance = this;
+
         velocity = Vector2.Zero;
+
+        hitbox = new RectHitbox(this, GlobalPosition, new Vector2(12, 12));
 
         fakeGun = GetNode<FakeGun>("FakeGun");
 
@@ -62,6 +67,11 @@ public class Player : Node2D
 
     public int GetHP() { return health; }
 
+    public void UpdateHitbox() { hitbox.center = GlobalPosition; }
+    public Hitbox GetHitbox() { return hitbox; }
+    public HitboxOwnerType GetHitboxOwnerType() { return HitboxOwnerType.Player; }
+
+    /// <summary> Apply an impulse to player movement /// </summary>
     public void ImpulseVelocity(Vector2 impulse)
     {
         velocity += impulse;
@@ -274,9 +284,11 @@ public class Player : Node2D
 
         if (hitTimer <= 0)
         {
-            (bool hit, HitboxOwner hitboxOwner) = CollisionManager.GetContainsHit(
-                Position, HitboxOwnerType.Enemy
-            );
+            // (bool hit, HitboxOwner hitboxOwner) = CollisionManager.GetContainsHit(
+            //     Position, HitboxOwnerType.Enemy
+            // );
+
+            (bool hit, HitboxOwner hitboxOwner) = CollisionManager.GetOverlapsHit(hitbox, HitboxOwnerType.Enemy);
 
             if (hit && hitboxOwner is Enemy hitEnemy)
             {
@@ -301,15 +313,18 @@ public class Player : Node2D
                     }
                 }
 
-                int damage = hitEnemy.DealDamage(this);
-
-                // TODO: Move this into OnHit() function
-                health -= damage;
-                GameManager.GetUI().UpdateHealth(health / 3.0f);
-
+                int damage = hitEnemy.DealContactDamage(this);
+                TakeDamage(damage);
+                
                 OnBounce();
             }
         }
+    }
+
+    public void TakeDamage(int damage)
+    {
+        health -= damage;
+        GameManager.GetUI().UpdateHealth(health / 3.0f);
     }
 
     private void RunGhosting(float delta)

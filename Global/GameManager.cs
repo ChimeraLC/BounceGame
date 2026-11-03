@@ -16,21 +16,28 @@ public partial class GameManager : Node
 
     private CollisionManager collisionManager;
     public EnemyManager enemyManager;
-    private int currentFrame;
+    public static int CurrentFrame;
+    public static Node2D WorldRoot;
     private float gameTime;
 
     public override void _Ready()
     {
         Instance = this;
 
+        // Read config file
+        SetupDebugConfigs();
+
         Logger.Log("Game Manager Start", LogLevel.info);
 
+        // Set initial values
         paused = false;
         timeDilation = 1;
         mouseK = true;
-        currentFrame = 0;
+        CurrentFrame = 0;
         gameTime = 0;
 
+        WorldRoot = GetTree().Root.GetNode<Node2D>("World");
+        
         // Create collision manager
         Logger.Log("Creating Collsion Manager", LogLevel.info);
         collisionManager = new CollisionManager();
@@ -51,17 +58,12 @@ public partial class GameManager : Node
             float trueTime = delta * timeDilation;
             Tick(trueTime);
             gameTime += trueTime;
-            currentFrame++;
+            CurrentFrame++;
         }
 
 #if DEBUG
         TickDebug(delta);
 #endif
-    }
-
-    public static int GetCurrentFrame()
-    {
-        return Instance.currentFrame;
     }
 
     public static float GetGameTime()
@@ -77,8 +79,8 @@ public partial class GameManager : Node
 
     private void Tick(float delta)
     {
-        if (playerInstance != null)
-            playerInstance.Tick(delta);
+        if (Player.Instance != null)
+            Player.Instance.Tick(delta);
 
         enemyManager.Tick(delta);
         DebugManager.Tick(delta);
@@ -95,9 +97,54 @@ public partial class GameManager : Node
 
         if (Input.IsActionJustPressed("debug_hitbox"))
         {
-            DebugManager.ToggleHitboxDebug();
+            DebugManager.ToggleFlag(DebugFlag.DrawUnitHitboxes);
+        }
+
+        if (Input.IsActionJustPressed("debug_pause"))
+        {
+            SetPaused(!paused);
         }
     }
 
+    private void SetPaused(bool isPaused)
+    {
+        paused = isPaused;
+        DebugManager.DebugStringCenter(paused ? "PAUSED" : ""); 
+    }
 
+    private static void SetupDebugConfigs()
+    {
+        File fileReader = new File();
+        if (fileReader.Open("res://configs.txt", File.ModeFlags.Read) == Error.Ok)
+        {
+            string content = fileReader.GetLine();
+            while (content != "")
+            {
+                // Set debugs
+                string[] splits = content.Split(" ");
+                bool valid = false;
+                if (splits.Length == 2 && splits[0].Length > 0)
+                {
+                    if (int.TryParse(splits[1], out int value))
+                    {
+                        valid = true;
+                        DebugFlag outflag;
+                        if (Enum.TryParse<DebugFlag>(splits[0], out outflag))
+                        {
+                            DebugManager.SetFlag(outflag, value);   
+                        }
+                        else
+                        {
+                            Logger.Log($"Configs has invalid flag: \"{splits[0]}\"", LogLevel.warn);
+                        }
+                    }                    
+                }
+
+                if (!valid)
+                    Logger.Log($"Configs has invalid line: \"{content}\"", LogLevel.warn);
+
+                content = fileReader.GetLine();
+            }
+        }
+    }
 }

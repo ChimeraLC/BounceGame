@@ -7,20 +7,20 @@
 script = ExtResource( 1 )
 
 [node name="Bottom" type="Polygon2D" parent="."]
-position = Vector2( 0, 550 )
+position = Vector2( 0, 520 )
 color = Color( 0.72549, 0.72549, 0.72549, 1 )
-polygon = PoolVector2Array( 0, 0, 1024, 0, 1024, 50, 0, 50 )
+polygon = PoolVector2Array( 0, 0, 1024, 0, 1024, 80, 0, 80 )
 script = ExtResource( 2 )
 
 [node name="Right" type="Polygon2D" parent="."]
-position = Vector2( 724, 0 )
+position = Vector2( 904, 0 )
 color = Color( 0.72549, 0.72549, 0.72549, 1 )
-polygon = PoolVector2Array( 0, 0, 300, 0, 300, 600, 0, 600 )
+polygon = PoolVector2Array( 0, 0, 120, 0, 120, 600, 0, 600 )
 script = ExtResource( 2 )
 
 [node name="Left" type="Polygon2D" parent="."]
 color = Color( 0.72549, 0.72549, 0.72549, 1 )
-polygon = PoolVector2Array( 0, 0, 300, 0, 300, 600, 0, 600 )
+polygon = PoolVector2Array( 0, 0, 120, 0, 120, 600, 0, 600 )
 script = ExtResource( 2 )
 
 [node name="Background" type="Polygon2D" parent="."]
