@@ -122,6 +122,13 @@ public partial class CollisionManager
         return (false, null);
     }
 
+    // Returns if the given point lies within the owner's hitbox
+    public static bool OverlapsPoint(HitboxOwner owner, Vector2 queryPosition)
+    {
+        owner.GetHitbox().UpdateHitbox();
+        return owner.GetHitbox().GetContainsHit(queryPosition).Item1;
+    }
+
     // TODO: Somehow, the register unregister should be automatic
     public static void AddHitbox(Hitbox inHitbox)
     {

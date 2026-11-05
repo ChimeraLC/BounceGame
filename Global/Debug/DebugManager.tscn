@@ -41,3 +41,10 @@ text = "aaaaaaaaa
 "
 fit_content_height = true
 scroll_active = false
+
+[node name="Console" type="TextEdit" parent="."]
+visible = false
+anchor_top = 1.0
+anchor_bottom = 1.0
+margin_top = -40.0
+margin_right = 720.0

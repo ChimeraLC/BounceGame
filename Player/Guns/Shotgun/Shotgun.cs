@@ -31,7 +31,7 @@ public class Shotgun : Gun
             );
             if (hitOwner is Enemy hitEnemy)
             {
-                hitEnemy.TakeDamage(1);
+                hitEnemy.TakeDamage(1.0f * firingPlayer.GetDamageModifier());
             }
         }
     }

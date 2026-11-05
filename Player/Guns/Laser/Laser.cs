@@ -5,7 +5,7 @@ public class Laser : Gun
     float remainingCharge;
     float minCharge = 0.5f;
     float maxCharge = 5;
-    bool isFiring = false;
+    private bool isFiring = false;
     public Laser()
     {
         remainingCharge = maxCharge;
@@ -52,7 +52,7 @@ public class Laser : Gun
         );
         if (hitOwner is Enemy hitEnemy)
         {
-            hitEnemy.TakeDamage(1 * delta);
+            hitEnemy.TakeDamage(1.0f * delta * firingPlayer.GetDamageModifier());
         }
     }
     public override void ReleaseFire()

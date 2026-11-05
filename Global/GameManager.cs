@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Runtime.CompilerServices;
 
 /// <summary>
 /// Global manager for all game logic. Tick is run through this
@@ -7,8 +8,6 @@ using System;
 public partial class GameManager : Node
 {
     public static GameManager Instance { get; private set; }
-
-    public float timeDilation { get; private set; }
 
     public bool paused { get; private set; }
 
@@ -31,7 +30,6 @@ public partial class GameManager : Node
 
         // Set initial values
         paused = false;
-        timeDilation = 1;
         mouseK = true;
         CurrentFrame = 0;
         gameTime = 0;
@@ -55,10 +53,17 @@ public partial class GameManager : Node
         }
         else
         {
-            float trueTime = delta * timeDilation;
-            Tick(trueTime);
-            gameTime += trueTime;
-            CurrentFrame++;
+            float trueTime = delta * GetTimeDilation();
+            
+            UITick(delta); // UI Should always tick at normal speed
+            
+            // Only run tick if not paused
+            if (trueTime > 0)
+            {
+                GameTick(trueTime);
+                gameTime += trueTime;
+                CurrentFrame++;
+            }
         }
 
 #if DEBUG
@@ -71,19 +76,42 @@ public partial class GameManager : Node
         return Instance.gameTime;
     }
 
+    private float GetTimeDilation()
+    {
+        float baseDilation = 1;
+
+        // Pause while upgrades shown
+        if (UpgradeManager.IsActive())
+            baseDilation = 0;
+
+        // If player has time effecting upgrades
+        if (Player.Instance != null)
+            baseDilation *= Player.Instance.GetTimeDilation();
+
+        return baseDilation;
+    }
+
     public static void EndGame()
     {
 		Instance.GetTree().Quit();
     }
 
-
-    private void Tick(float delta)
+    // Tick for game related logic; Is affected by time dilations
+    private void GameTick(float delta)
     {
         if (Player.Instance != null)
             Player.Instance.Tick(delta);
 
         enemyManager.Tick(delta);
+    }
+
+    // Tick for ui logic; always ticks at the same speed
+    private void UITick(float delta)
+    {
         DebugManager.Tick(delta);
+
+        if (UpgradeManager.Instance != null)
+            UpgradeManager.Instance.Tick(delta);
     }
 
     private void TickDebug(float delta)

@@ -14,6 +14,7 @@ public static class Consts
     public static float Gravity = 180;
     public static Vector2 scaleFlipX = new Vector2(-1, 1);
     public static Vector2 scaleNormal = new Vector2(1, 1);
+    public static Vector2 offScreen = new Vector2(-1000, -1000);
 
     public static int ScreenHeight = 600;
     public static int ScreenWidth = 1024;

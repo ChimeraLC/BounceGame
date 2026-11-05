@@ -27,6 +27,11 @@ public class Player : Node2D, HitboxOwner
     private Gun currentGun;
     private FakeGun fakeGun;
     private int currentGunIndex;
+
+    // Upgrades
+    public UpgradeTracker upgradeTracker;
+
+
     public override void _Ready()
     {
         Instance = this;
@@ -44,6 +49,8 @@ public class Player : Node2D, HitboxOwner
         // guns.Add(new Laser());
 
         currentGun = guns[0];
+
+        upgradeTracker = new UpgradeTracker();
     }
 
     public void Tick(float delta)
@@ -51,13 +58,13 @@ public class Player : Node2D, HitboxOwner
 #if DEBUG
         if (DebugManager.Ghosting)
         {
-            RunGhosting(delta);
+            TickGhosting(delta);
         }
         else
 #endif
         {
-            RunPhysics(delta);
-            RunCollisions(delta);
+            TickPhysics(delta);
+            TickCollisions(delta);
         }
         
         TickWeapon(delta);
@@ -135,6 +142,15 @@ public class Player : Node2D, HitboxOwner
         currentGun = guns[currentGunIndex];
     }
 
+    // Returns damage change (i.e. with buffs, debuffs)
+    public float GetDamageModifier()
+    {
+        float baseModifier = 1;
+        baseModifier += upgradeTracker.GetUpgradeCount(Upgrade.DamageUp) * 0.25f; // Each damageup gives +25% damage
+
+        return baseModifier;
+    }
+
     public override void _Draw()
     {
         Vector2 aimDirection = GetAimDirection();
@@ -150,6 +166,19 @@ public class Player : Node2D, HitboxOwner
         return (GetGlobalMousePosition() - Position).Normalized();
     }
 
+    public float GetTimeDilation()
+    {
+        if (upgradeTracker.HasUpgrade(Upgrade.TimeSlow))
+        {
+            if (Input.IsActionPressed("key_rmb"))
+            {
+                return 0.5f;
+            }
+        }
+        return 1.0f;
+    }
+
+
     // Whenever player collides with bottom or an enemy
     private void OnBounce()
     {
@@ -157,7 +186,7 @@ public class Player : Node2D, HitboxOwner
         currentGun.Reload();
     }
 
-    private void RunPhysics(float delta)
+    private void TickPhysics(float delta)
     {
         preframe = Position;
 
@@ -171,8 +200,10 @@ public class Player : Node2D, HitboxOwner
 
         // Acceleration should be constant during a single runPhysics call
         Vector2 acceleration = Vector2.Down * Consts.Gravity;
-        
-        // acceleration += HorControl * Vector2.Right * Input.GetAxis("key_left", "key_right");
+
+        // Allowing for jet controls    
+        if (upgradeTracker.HasUpgrade(Upgrade.JetControls))
+            acceleration += HorControl * Vector2.Right * Input.GetAxis("key_left", "key_right");
     
         // TODO: Air resistance
 
@@ -274,11 +305,11 @@ public class Player : Node2D, HitboxOwner
             break;
         }
         
-        RunPhysics(delta - preDelta);
+        TickPhysics(delta - preDelta);
     }
 
     // Collisions with enemies don't have to be as exact
-    private void RunCollisions(float delta)
+    private void TickCollisions(float delta)
     {
         hitTimer = Mathf.Max(0, hitTimer - delta);
 
@@ -327,7 +358,7 @@ public class Player : Node2D, HitboxOwner
         GameManager.GetUI().UpdateHealth(health / 3.0f);
     }
 
-    private void RunGhosting(float delta)
+    private void TickGhosting(float delta)
     {
         Vector2 movementInput = new Vector2(Input.GetAxis("key_left", "key_right"),
             Input.GetAxis("key_up", "key_down"));

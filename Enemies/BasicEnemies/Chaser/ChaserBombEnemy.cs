@@ -17,7 +17,7 @@ public class ChaserBombEnemy : ChaserEnemy
         explosionDisplay.Modulate = new Color(1, 1, 1, 0.3f);
     }
 
-    protected override void TickMain(float delta)
+    protected override void TickMainPlayer(float delta)
     {
         switch (state)
         {
@@ -62,7 +62,7 @@ public class ChaserBombEnemy : ChaserEnemy
 
         if (spawnTimer >= 3)
         {
-            TakeDamage(1000);
+            Suicide();
             if (Player.Instance != null)
             {
                 Vector2 playerLocation = Player.Instance.GlobalPosition;

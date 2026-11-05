@@ -22,9 +22,16 @@ public abstract class Enemy : Node2D, HitboxOwner
         TickHurt(delta);
 
         TickMain(delta);
+        if (Player.Instance != null)
+            TickMainPlayer(delta);
+
+        TickAnimation(delta);
     }
 
+    // Only runs while the player is alive
+    protected virtual void TickMainPlayer(float delta) {}
     protected virtual void TickMain(float delta) {}
+    protected virtual void TickAnimation(float delta) {}
 
     protected virtual void TickHurt(float delta)
     {
@@ -62,6 +69,14 @@ public abstract class Enemy : Node2D, HitboxOwner
             hurtTimer = 0.2f;
     }
 
+    public virtual bool IsAlive() {return isAlive;}
+
+    protected virtual void Suicide()
+    {
+        if (isAlive)
+            TakeDamage(1000);
+    }
+
     // Called when a player is hit by this
     public virtual int DealContactDamage( Player player ) { return 1; }
 
@@ -76,5 +91,8 @@ public abstract class Enemy : Node2D, HitboxOwner
     public virtual Vector2 GetSpawnpoint() { return GlobalPosition; }
 
     // Private stuff?
-    protected abstract void OnDeath();
+    protected virtual void OnDeath()
+    {
+        CollisionManager.RemoveHitbox(GetHitbox());
+    }
 }

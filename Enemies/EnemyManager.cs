@@ -4,6 +4,7 @@ using Godot;
 public enum EnemyType
 {
     TumorStatic,
+    TumorShooter,
     ChaserBase,
     ChaserExplode,
 }
@@ -11,6 +12,7 @@ public enum EnemyType
 public class EnemyManager
 {
     private HashSet<Enemy> enemies = new HashSet<Enemy>();
+    private HashSet<Enemy> queuedEnemies = new HashSet<Enemy>();
     private HashSet<Enemy> garbageEnemies = new HashSet<Enemy>();
     private Dictionary<EnemyType, PackedScene> enemyPrefabs = new Dictionary<EnemyType, PackedScene>();
     private static Dictionary<EnemyType, string> prefabPaths = new Dictionary<EnemyType, string>()
@@ -18,11 +20,13 @@ public class EnemyManager
         [EnemyType.ChaserBase] = "res://Enemies/BasicEnemies/Chaser/ChaserEnemy.tscn",
         [EnemyType.ChaserExplode] = "res://Enemies/BasicEnemies/Chaser/ChaserBombEnemy.tscn",
         [EnemyType.TumorStatic] = "res://Enemies/BasicEnemies/Tumor/TumorStaticEnemy.tscn",
+        [EnemyType.TumorShooter] = "res://Enemies/BasicEnemies/Tumor/TumorShooterEnemy.tscn",
     };
 
     public void RegisterEnemy(Enemy newEnemy)
     {
-        enemies.Add(newEnemy);
+        // Queues the enemy registering in case one is spawned during a tick
+        queuedEnemies.Add(newEnemy);
     }
 
     public void Tick(float delta)
@@ -36,16 +40,22 @@ public class EnemyManager
         if (Input.IsActionJustPressed("debug_1"))
             SpawnEnemy(EnemyType.ChaserBase);
     
-    
         if (Input.IsActionJustPressed("debug_2"))
             SpawnEnemy(EnemyType.ChaserExplode);
             
         if (Input.IsActionJustPressed("debug_3"))
             SpawnEnemy(EnemyType.TumorStatic);
+
+        if (Input.IsActionJustPressed("debug_4"))
+            SpawnEnemy(EnemyType.TumorShooter);
     }
 
     private void TickEnemies(float delta)
     {
+        // Add in queued enemies
+        enemies.UnionWith(queuedEnemies);
+        queuedEnemies.Clear();
+        
         foreach (Enemy enemy in enemies)
         {
             enemy.Tick(delta);
@@ -88,7 +98,7 @@ public class EnemyManager
             PackedScene scene = GD.Load<PackedScene>(prefabPaths[enemyType]);
             if (scene != null)
             {
-                enemyPrefabs[EnemyType.ChaserBase] = scene;
+                enemyPrefabs[enemyType] = scene;
                 return scene;
             }
         }

@@ -36,9 +36,4 @@ public partial class TumorStaticEnemy : Enemy
     {
         return hitbox;
     }
-
-    protected override void OnDeath()
-    {
-        CollisionManager.RemoveHitbox(hitbox);
-    }
 }

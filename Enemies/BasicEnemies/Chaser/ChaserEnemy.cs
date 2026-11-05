@@ -45,7 +45,7 @@ public class ChaserEnemy : Enemy
 
     private const float spawnDuration = 2;
 
-    protected override void TickMain(float delta)
+    protected override void TickMainPlayer(float delta)
     {
         switch (state)
         {
@@ -74,15 +74,12 @@ public class ChaserEnemy : Enemy
 
     protected virtual void TickChasing(float delta)
     {
-        if (Player.Instance != null)
-        {
-            Vector2 offset = Player.Instance.GlobalPosition - GlobalPosition;
-            facingAngle = Utils.MoveTowardsAngle(facingAngle, offset.Angle(), delta * turnSpeed).Item1;
+        Vector2 offset = Player.Instance.GlobalPosition - GlobalPosition;
+        facingAngle = Utils.MoveTowardsAngle(facingAngle, offset.Angle(), delta * turnSpeed).Item1;
 
-            Rotation = facingAngle;
+        Rotation = facingAngle;
 
-            Position += new Vector2(Mathf.Cos(facingAngle), Mathf.Sin(facingAngle)) * delta * moveSpeed;
-        }
+        Position += new Vector2(Mathf.Cos(facingAngle), Mathf.Sin(facingAngle)) * delta * moveSpeed;
     }
 
     public override void UpdateHitbox()

@@ -11,11 +11,11 @@
 z_index = 100
 z_as_relative = false
 
-[node name="DebugManager" parent="ControlLayer" instance=ExtResource( 5 )]
+[node name="MainUI" parent="ControlLayer" instance=ExtResource( 6 )]
 margin_right = 1024.0
 margin_bottom = 600.0
 
-[node name="MainUI" parent="ControlLayer" instance=ExtResource( 6 )]
+[node name="DebugManager" parent="ControlLayer" instance=ExtResource( 5 )]
 margin_right = 1024.0
 margin_bottom = 600.0
 

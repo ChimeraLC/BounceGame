@@ -8,6 +8,7 @@ public partial class DebugManager: Control
     private RichTextLabel leftMiddleLabel;
     private RichTextLabel rightTopLabel;
     private Label centerLabel;
+    private TextEdit console;
     
     public static bool Ghosting;
     public override void _Ready()
@@ -18,6 +19,7 @@ public partial class DebugManager: Control
         leftTopLabel = GetNode<RichTextLabel>("LeftTopLabel");
         leftMiddleLabel = GetNode<RichTextLabel>("LeftMiddleLabel");
         rightTopLabel = GetNode<RichTextLabel>("RightTopLabel");
+        console = GetNode<TextEdit>("Console");
     }
 
     public static void Tick(float delta)
@@ -28,6 +30,56 @@ public partial class DebugManager: Control
 #endif // #if DEBUG
     
     }
+
+#if DEBUG
+    // Console stuff should work whenever; separate from tick
+    public override void _Process(float delta)
+    {
+        if (Input.IsActionJustPressed("debug_console"))
+        {
+            if (console.Visible)
+            {
+                console.ReleaseFocus();
+                console.Visible = false;
+            }
+            else
+            {
+                console.Text = "";
+                console.Visible = true;
+                console.GrabFocus();
+            }
+        }
+
+        if (Input.IsActionJustPressed("debug_enter"))
+        {
+            if (console.Visible)
+            {
+                RunCommand(console.Text);
+                console.ReleaseFocus();
+                console.Visible = false;
+                console.Text = "";
+            }
+        }
+    }
+
+    private void RunCommand(string command)
+    {
+        Logger.Log($"Running command: {command}", LogLevel.info);
+
+        command = command.ToLower();
+
+        string[] parsed = command.StripEdges().Split(" ");
+        if (parsed.Length == 0)
+            Logger.Log("Recieved empty command", LogLevel.warn);
+
+        switch (parsed[0])
+        {
+            case "showupgrades":
+                UpgradeManager.Instance.ShowUpgrades();
+            break;
+        }
+    }
+#endif // #if DEBUG
 
     public static void DebugStringCenter(string message)
     {
