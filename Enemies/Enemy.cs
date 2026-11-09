@@ -11,6 +11,7 @@ public abstract class Enemy : Node2D, HitboxOwner
 
     // Leaving play
     float hurtTimer = 0;
+    public int xpWorth = 0; // Set through enemyManager
 
     EnemyManager enemyManager;
 
@@ -93,6 +94,9 @@ public abstract class Enemy : Node2D, HitboxOwner
     // Private stuff?
     protected virtual void OnDeath()
     {
+        if (Player.Instance != null)
+            Player.Instance.AddXP(xpWorth);
+    
         CollisionManager.RemoveHitbox(GetHitbox());
     }
 }

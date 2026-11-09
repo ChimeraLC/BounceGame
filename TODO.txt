@@ -1,0 +1,1 @@
+Fix OverlapsHitbox() and GetOverlapsHit() to properly track the other hitbox owner for compound hitboxes

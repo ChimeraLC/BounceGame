@@ -6,21 +6,29 @@ public class MainUI : Control
     private Label centerLabel;
     private float centerLabelFade = 0;
     private ColorRect healthDisplay;
+    private ColorRect xpDisplay;
     public override void _Ready()
     {
         GameManager.RegisterUIInstance(this);
     
         healthDisplay = GetNode<ColorRect>("HealthDisplay");
         healthDisplay.Color = Consts.GetColor(ColorType.Dark);
+
+        xpDisplay = GetNode<ColorRect>("XPDisplay");
         
         centerLabel = GetNode<Label>("CenterLabel");
 
         SetSize(new Vector2(Consts.ScreenWidth, Consts.ScreenHeight));
     }
 
-    public void UpdateHealth(float healthAmount)
+    public void UpdateHealth(float healthPercentage)
     {
-        healthDisplay.RectSize = new Vector2(healthAmount * 200, 40);
+        healthDisplay.RectSize = new Vector2(healthPercentage * 200, 25);
+    }
+
+    public void UpdateXP(float xpPercentage)
+    {
+        xpDisplay.RectSize = new Vector2(xpPercentage * 200, 10);
     }
 
     public override void _Process(float delta)

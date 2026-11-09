@@ -18,9 +18,16 @@ public interface HitboxOwner
     HitboxOwnerType GetHitboxOwnerType();
 }
 
+// Handles normals in some edge cases
+public interface CompoundHitboxOwner : HitboxOwner
+{
+    Vector2 GetNormal(Vector2 testPoint);
+}
+
 public abstract class Hitbox
 {
     public int lastUpdatedHitboxFrame = -1;
+    public bool enabled {get; private set;} = true;
 
     protected HitboxOwner hitboxOwner;
     /// <summary> Returns distance a given ray intersects this hitbox at. -1 if no hit </summary>
@@ -50,6 +57,8 @@ public abstract class Hitbox
 
     public HitboxOwner GetHitboxOwner() { return hitboxOwner; }
 
+    public void SetEnabled(bool isEnabled) { enabled = isEnabled; }
+
     public abstract void DrawHitbox( Control drawOwner );
 
 
@@ -57,8 +66,11 @@ public abstract class Hitbox
     public bool OverlapsHitbox(Hitbox otherHitbox) { return HitboxesOverlap(this, otherHitbox); }
     public static bool HitboxesOverlap(Hitbox hitbox1, Hitbox hitbox2)
     {
-        // TODO: Cleanup; It's a bit messy
+        // Make sure both hitboxes are active
+        if (!hitbox1.enabled || !hitbox2.enabled)
+            return false;
         
+        // TODO: Cleanup; It's a bit messy
         // Compound cases
         if (hitbox1 is CompoundHitbox compoundHitbox)
         {
@@ -138,12 +150,14 @@ public class RectHitbox : Hitbox
 {
     public Vector2 center;
     public Vector2 halfDimensions;
-    public RectHitbox(HitboxOwner inOwner, Vector2 inCenter, Vector2 inHalfDimensions)
+    public RectHitbox(HitboxOwner inOwner, Vector2 inCenter, Vector2 inHalfDimensions, bool compound = false)
     {
         hitboxOwner = inOwner;
         center = inCenter;
         halfDimensions = inHalfDimensions;
-        CollisionManager.AddHitbox(this);
+
+        if (!compound)
+            CollisionManager.AddHitbox(this);
     }
 
     public override (float, HitboxOwner) GetFirstRayHit(Vector2 start, Vector2 direction)
@@ -197,7 +211,7 @@ public class RectHitbox : Hitbox
 
     public override void DrawHitbox(Control drawOwner)
     {
-        drawOwner.DrawRect(new Rect2(center - halfDimensions, halfDimensions * 2), Colors.Purple, false);
+        drawOwner.DrawRect(new Rect2(center - halfDimensions, halfDimensions * 2), enabled ? Colors.Purple : Colors.LightBlue, false);
     }
 }
 
@@ -206,12 +220,15 @@ public class CircleHitbox : Hitbox
 {
     public Vector2 center;
     public float radius;
-    public CircleHitbox(HitboxOwner inOwner, Vector2 inCenter, float inRadius)
+    // Compound - if it's in a compound hitbox and shouldn't be individually registered
+    public CircleHitbox(HitboxOwner inOwner, Vector2 inCenter, float inRadius, bool compound = false)
     {
         hitboxOwner = inOwner;
         center = inCenter;
         radius = inRadius;
-        CollisionManager.AddHitbox(this);
+    
+        if (!compound)
+            CollisionManager.AddHitbox(this);
     }
 
     public override (float, HitboxOwner) GetFirstRayHit(Vector2 start, Vector2 direction)
@@ -245,7 +262,7 @@ public class CircleHitbox : Hitbox
     
     public override void DrawHitbox(Control drawOwner)
     {
-        drawOwner.DrawArc(center, radius, 0, Mathf.Pi * 2, 32, Colors.Purple);
+        drawOwner.DrawArc(center, radius, 0, Mathf.Pi * 2, 32, enabled ? Colors.Purple : Colors.LightBlue);
     }
 }
 
@@ -299,6 +316,9 @@ public class CompoundHitbox : Hitbox
 
     public override Vector2 GetNormal(Vector2 testPoint)
     {
+        if (hitboxOwner is CompoundHitboxOwner compoundOwner)
+            return compoundOwner.GetNormal(testPoint);
+            
         // TODO: This kind of sucks, assumes GetNormal() is right after any GetHits()
         Logger.Log("Compound hitbox was directly queried for normal", LogLevel.error);
         return Vector2.Up;

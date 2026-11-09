@@ -59,6 +59,9 @@ public partial class CollisionManager
         HitboxOwner potentialOwner;
         foreach ( Hitbox hitbox in Instance.hitboxes)
         {
+            if (!hitbox.enabled)
+                continue;
+
             if (queryType != HitboxOwnerType.Any && hitbox.GetHitboxOwnerType() != queryType)
             {
                 continue;
@@ -83,6 +86,9 @@ public partial class CollisionManager
     {
         foreach ( Hitbox hitbox in Instance.hitboxes)
         {
+            if (!hitbox.enabled)
+                continue;
+                
             if (queryType != HitboxOwnerType.Any && hitbox.GetHitboxOwnerType() != queryType)
             {
                 continue;
@@ -105,6 +111,9 @@ public partial class CollisionManager
         testHitbox.UpdateHitbox();
         foreach ( Hitbox hitbox in Instance.hitboxes)
         {
+            if (!hitbox.enabled)
+                continue;
+                
             if (hitbox == testHitbox || queryType != HitboxOwnerType.Any && hitbox.GetHitboxOwnerType() != queryType)
             {
                 continue;
@@ -125,8 +134,13 @@ public partial class CollisionManager
     // Returns if the given point lies within the owner's hitbox
     public static bool OverlapsPoint(HitboxOwner owner, Vector2 queryPosition)
     {
-        owner.GetHitbox().UpdateHitbox();
-        return owner.GetHitbox().GetContainsHit(queryPosition).Item1;
+        Hitbox hitbox = owner.GetHitbox();
+
+        if (!hitbox.enabled)
+            return false;
+
+        hitbox.UpdateHitbox();
+        return hitbox.GetContainsHit(queryPosition).Item1;
     }
 
     // TODO: Somehow, the register unregister should be automatic

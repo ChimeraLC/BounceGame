@@ -240,9 +240,4 @@ public class Intestines : Boss
 	{
 		return compoundHitbox;
 	}
-
-	protected override void OnDeath()
-	{
-		CollisionManager.RemoveHitbox(compoundHitbox);
-	}
 }

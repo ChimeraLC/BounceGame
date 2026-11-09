@@ -6,10 +6,15 @@ public class Player : Node2D, HitboxOwner
 {
     public static Player Instance {get; private set;}
     // Health
-    private int health = 3;
+    private const int MaxHealth = 3;
+    private int health = MaxHealth;
     private const float InvulTimer = 3;
     private float hitTimer = 0;
     private const float MinHitSpeed = 300;
+
+    // Leveling up
+    private int levelXp = 8; // This increases as time goes on
+    private int currentXp = 0;
 
     // Movement
     private const int playerRadius = 12;
@@ -40,6 +45,7 @@ public class Player : Node2D, HitboxOwner
 
         hitbox = new RectHitbox(this, GlobalPosition, new Vector2(12, 12));
 
+        // Setup guns
         fakeGun = GetNode<FakeGun>("FakeGun");
 
         currentGunIndex = 0;
@@ -50,7 +56,12 @@ public class Player : Node2D, HitboxOwner
 
         currentGun = guns[0];
 
+        // Setup upgrades
         upgradeTracker = new UpgradeTracker();
+
+        // Reset UI elements
+        OnHealthUpdate();
+        OnXPUpdate();
     }
 
     public void Tick(float delta)
@@ -319,35 +330,40 @@ public class Player : Node2D, HitboxOwner
             //     Position, HitboxOwnerType.Enemy
             // );
 
+            // TODO: Dealing with hitting multiple at once?
             (bool hit, HitboxOwner hitboxOwner) = CollisionManager.GetOverlapsHit(hitbox, HitboxOwnerType.Enemy);
 
             if (hit && hitboxOwner is Enemy hitEnemy)
             {
-                hitTimer = InvulTimer;
-
-                // Temp bounce code; uses preframe to prevent going too deep into hitbox TODO: Actuall collision math? Imagine
-                Vector2 normal = hitboxOwner.GetHitbox().GetNormal(preframe);
-                Vector2 projection = velocity.Dot(normal) * normal;
-                velocity -= 2 * projection;
-
-                // Maintaining a knockback speed
-                float currentSpeed = velocity.Length();
-                if (currentSpeed < MinHitSpeed)
-                {
-                    if (Mathf.IsZeroApprox(currentSpeed))
-                    {
-                        velocity = normal * MinHitSpeed;
-                    }
-                    else
-                    {
-                        velocity = velocity / currentSpeed * MinHitSpeed;
-                    }
-                }
-
+                // Check if it does contact damage
                 int damage = hitEnemy.DealContactDamage(this);
-                TakeDamage(damage);
-                
-                OnBounce();
+                if (damage >= 0)
+                {
+                    hitTimer = InvulTimer;
+
+                    // Temp bounce code; uses preframe to prevent going too deep into hitbox TODO: Actuall collision math? Imagine
+                    Vector2 normal = hitboxOwner.GetHitbox().GetNormal(preframe);
+                    Vector2 projection = velocity.Dot(normal) * normal;
+                    velocity -= 2 * projection;
+
+                    // Maintaining a knockback speed
+                    float currentSpeed = velocity.Length();
+                    if (currentSpeed < MinHitSpeed)
+                    {
+                        if (Mathf.IsZeroApprox(currentSpeed))
+                        {
+                            velocity = normal * MinHitSpeed;
+                        }
+                        else
+                        {
+                            velocity = velocity / currentSpeed * MinHitSpeed;
+                        }
+                    }
+
+                    TakeDamage(damage);
+                    
+                    OnBounce();
+                }
             }
         }
     }
@@ -355,7 +371,31 @@ public class Player : Node2D, HitboxOwner
     public void TakeDamage(int damage)
     {
         health -= damage;
-        GameManager.GetUI().UpdateHealth(health / 3.0f);
+        OnHealthUpdate();
+    }
+
+    public void AddXP(int xpAmount)
+    {
+        currentXp += xpAmount;
+        if (currentXp >= levelXp)
+        {
+            currentXp -= levelXp; // Check case when multiple levels overlap
+            levelXp += 4;
+
+            // Spawn an upgrade orb
+            EnemyManager.RequestEnemy(EnemyType.UpgradeOrb);
+        }
+        OnXPUpdate();
+    }
+
+    private void OnHealthUpdate()
+    {
+        GameManager.GetUI().UpdateHealth(health / (float) MaxHealth);
+    }
+
+    private void OnXPUpdate()
+    {
+        GameManager.GetUI().UpdateXP(currentXp / (float) levelXp);
     }
 
     private void TickGhosting(float delta)

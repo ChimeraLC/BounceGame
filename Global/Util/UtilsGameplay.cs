@@ -22,6 +22,17 @@ public static partial class Utils
     public static (Vector2, FieldEdge) GenerateRandomEdgepoint( int cornerPadding,
         int sidePadding, FieldEdge edges = FieldEdge.Left | FieldEdge.Right | FieldEdge.Top | FieldEdge.Bottom)
     {
+        FieldEdge chosenEdge = GenerateRandomEdge(edges);
+        if (chosenEdge != FieldEdge.None)
+            return (GenerateEdgepoint(cornerPadding, sidePadding, chosenEdge), chosenEdge);
+
+
+        // This codepath should never happen
+        return (Vector2.Zero, FieldEdge.None);
+    }
+
+    public static FieldEdge GenerateRandomEdge(FieldEdge edges = FieldEdge.Left | FieldEdge.Bottom | FieldEdge.Right)
+    {
         int values = 0;
         foreach (FieldEdge edge in Enum.GetValues(typeof(FieldEdge)))
         {
@@ -31,8 +42,8 @@ public static partial class Utils
     
         if (values == 0)
         {
-            Logger.Log("GenerateRandomEdgepoint() recieved no sides", LogLevel.error);
-            return (Vector2.Zero, FieldEdge.None);
+            Logger.Log("GenerateRandomEdge() recieved no sides", LogLevel.error);
+            return FieldEdge.None;
         }
 
         int chosenSide = rand.Next(values);
@@ -43,13 +54,12 @@ public static partial class Utils
                 chosenSide--;
                 if (chosenSide < 0)
                 {
-                    return (GenerateEdgepoint(cornerPadding, sidePadding, edge), edge);
+                    return edge;
                 }
             }
         }
 
-        // This codepath should never happen
-        return (Vector2.Zero, FieldEdge.None);
+        return FieldEdge.None;
     }
 
     public static Vector2 GenerateEdgepoint( int cornerPadding, int sidePadding, FieldEdge edge)

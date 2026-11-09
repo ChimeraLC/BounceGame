@@ -54,7 +54,7 @@ public static partial class Utils
         return sol1 < sol2 ? sol1 : sol2;
     }
 
-        public static (int, float, float) SolveQuadratic(float a, float b, float c)
+    public static (int, float, float) SolveQuadratic(float a, float b, float c)
     {
         if (a == 0)
             return (1, -c / b, 0);
@@ -68,5 +68,34 @@ public static partial class Utils
         float sol2 = (-b - det) / (2 * a);
 
         return (2, sol1, sol2);
+    }
+
+    // Returns two random ints between low and high, and least spacing apart
+    public static (int, int) RandomSpaced(int low, int high, int spacing)
+    {
+        // Edge cases
+        if (high < low)
+            return (high, low);
+
+        if (spacing > high - low)
+            return (low, high);
+    
+        int lower = RandRange(low, high-spacing);
+        int higher = RandRange(lower + spacing, high);
+        return (lower, higher);
+    }
+
+    // Returns two random ints between low and high, between minSpacing and maxSpacing apart
+    public static (int, int) RandomSpacedMaxed(int low, int high, int minSpacing, int maxSpacing)
+    {
+        // Assumes values are all legal
+        int lower = RandRange(low, high-minSpacing);
+        int higher = RandRange(lower + minSpacing, low + maxSpacing);
+        return (lower, higher);
+    }
+
+    public static int RandRange(int low, int high)
+    {
+        return rand.Next() % (high - low) + low;
     }
 }

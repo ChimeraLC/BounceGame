@@ -20,9 +20,4 @@ public partial class BasicRectEnemy : Enemy
     }
 
     public override Hitbox GetHitbox() { return hitbox; }
-
-    protected override void OnDeath()
-    {
-        CollisionManager.RemoveHitbox(hitbox);
-    }
 }

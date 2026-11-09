@@ -7,10 +7,13 @@ public enum EnemyType
     TumorShooter,
     ChaserBase,
     ChaserExplode,
+    BurrowerBasic,
+    UpgradeOrb,
 }
 
 public class EnemyManager
 {
+    public static EnemyManager Instance {get; private set;}
     private HashSet<Enemy> enemies = new HashSet<Enemy>();
     private HashSet<Enemy> queuedEnemies = new HashSet<Enemy>();
     private HashSet<Enemy> garbageEnemies = new HashSet<Enemy>();
@@ -21,6 +24,23 @@ public class EnemyManager
         [EnemyType.ChaserExplode] = "res://Enemies/BasicEnemies/Chaser/ChaserBombEnemy.tscn",
         [EnemyType.TumorStatic] = "res://Enemies/BasicEnemies/Tumor/TumorStaticEnemy.tscn",
         [EnemyType.TumorShooter] = "res://Enemies/BasicEnemies/Tumor/TumorShooterEnemy.tscn",
+        [EnemyType.UpgradeOrb] = "res://Player/Upgrades/UpgradeOrb.tscn",
+        [EnemyType.BurrowerBasic] = "res://Enemies/BasicEnemies/Burrower/BurrowerEnemy.tscn",
+    };
+
+    public EnemyManager()
+    {
+        Instance = this;
+    }
+
+    private static Dictionary<EnemyType, int> xpValues = new Dictionary<EnemyType, int>()
+    {
+        [EnemyType.ChaserBase] = 2,
+        [EnemyType.ChaserExplode] = 1,
+        [EnemyType.TumorStatic] = 1,
+        [EnemyType.TumorShooter] = 2,
+        [EnemyType.UpgradeOrb] = 0,
+        [EnemyType.BurrowerBasic] = 2
     };
 
     public void RegisterEnemy(Enemy newEnemy)
@@ -47,7 +67,7 @@ public class EnemyManager
             SpawnEnemy(EnemyType.TumorStatic);
 
         if (Input.IsActionJustPressed("debug_4"))
-            SpawnEnemy(EnemyType.TumorShooter);
+            SpawnEnemy(EnemyType.BurrowerBasic);
     }
 
     private void TickEnemies(float delta)
@@ -77,6 +97,13 @@ public class EnemyManager
         }
     }
 
+    // TODO: Have some legality checks
+    public static void RequestEnemy(EnemyType enemyType)
+    {
+        if (Instance != null)
+            Instance.SpawnEnemy(enemyType);
+    }
+
     private void SpawnEnemy(EnemyType enemyType)
     {
         PackedScene scene = GetPrefab(enemyType);
@@ -84,6 +111,7 @@ public class EnemyManager
         {
             Enemy newEnemy = scene.Instance<Enemy>();
             newEnemy.GlobalPosition = newEnemy.GetSpawnpoint();
+            newEnemy.xpWorth = GetXPWorth(enemyType);
             GameManager.WorldRoot.AddChild(newEnemy);
         }
     }
@@ -105,5 +133,14 @@ public class EnemyManager
 
         Logger.Log($"Enemy type {enemyType} has no set prefabs", LogLevel.error);
         return null;
+    }
+
+    private int GetXPWorth(EnemyType enemyType)
+    {
+        if (xpValues.ContainsKey(enemyType))
+            return xpValues[enemyType];
+
+        Logger.Log($"Enemy type {enemyType} has no xp data", LogLevel.error);
+        return 0;
     }
 }

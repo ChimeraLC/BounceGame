@@ -16,7 +16,7 @@ public class IntestinesBody : Enemy
     public void Initialize(Intestines owner)
     {
         this.owner = owner;
-        hitbox = new CircleHitbox(this, Position, 32);
+        hitbox = new CircleHitbox(this, Position, 32, true);
     }
 
     public override void UpdateHitbox()
