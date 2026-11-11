@@ -42,6 +42,10 @@ public partial class GameManager : Node
 
         Logger.Log("Creating Enemy Manager", LogLevel.info);
         enemyManager = new EnemyManager();
+
+#if DEBUG
+        enemyManager.VerifyData();
+#endif // #if DEBUG
     }
 
     // Called every frame. 'delta' is the elapsed time since the previous frame.

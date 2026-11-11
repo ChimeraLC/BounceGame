@@ -63,23 +63,6 @@ public class Intestines : Boss
 	// Completely unique logic
 	public override void Tick(float delta)
 	{
-#if DEBUG
-		if (Input.IsActionPressed("debug_progress"))
-		{
-			bodyOffset += delta * 400;
-			if (bodyOffset > endOffset)
-				GenBodyPosition();
-		}
-		if (Input.IsActionPressed("debug_regress"))
-		{
-			bodyOffset -= delta * 400;
-		}
-		if (Input.IsActionJustPressed("debug_action"))
-		{
-			GenBodyPosition();
-		}
-#endif   
-
 		warnIndicator.Visible = waitTimer > 0;
 
 		if (waitTimer < 0)

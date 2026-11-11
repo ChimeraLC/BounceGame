@@ -29,8 +29,9 @@ public abstract class Enemy : Node2D, HitboxOwner
         TickAnimation(delta);
     }
 
-    // Only runs while the player is alive
+    /// <summary> Only runs in ticks where Player.Instance is valid </summary>
     protected virtual void TickMainPlayer(float delta) {}
+    /// <summary> Always runs every frame, regardless of if player is active or not </summary>
     protected virtual void TickMain(float delta) {}
     protected virtual void TickAnimation(float delta) {}
 

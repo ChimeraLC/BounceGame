@@ -10,7 +10,7 @@ public class Player : Node2D, HitboxOwner
     private int health = MaxHealth;
     private const float InvulTimer = 3;
     private float hitTimer = 0;
-    private const float MinHitSpeed = 300;
+    private const float MinHitSpeed = 400;
 
     // Leveling up
     private int levelXp = 8; // This increases as time goes on
@@ -79,6 +79,7 @@ public class Player : Node2D, HitboxOwner
         }
         
         TickWeapon(delta);
+        TickAnimation(delta);
 
         Update();
     }
@@ -89,12 +90,7 @@ public class Player : Node2D, HitboxOwner
     public Hitbox GetHitbox() { return hitbox; }
     public HitboxOwnerType GetHitboxOwnerType() { return HitboxOwnerType.Player; }
 
-    /// <summary> Apply an impulse to player movement /// </summary>
-    public void ImpulseVelocity(Vector2 impulse)
-    {
-        velocity += impulse;
-    }
-
+// MARK: Weapon
     private void TickWeapon(float delta)
     {
         Field field = GameManager.GetField(); // Getting each frame is probably slow
@@ -177,25 +173,19 @@ public class Player : Node2D, HitboxOwner
         return (GetGlobalMousePosition() - Position).Normalized();
     }
 
-    public float GetTimeDilation()
+// MARK: Physics
+    /// <summary> Apply an impulse to player movement /// </summary>
+    public void ImpulseVelocity(Vector2 impulse)
     {
-        if (upgradeTracker.HasUpgrade(Upgrade.TimeSlow))
-        {
-            if (Input.IsActionPressed("key_rmb"))
-            {
-                return 0.5f;
-            }
-        }
-        return 1.0f;
+        velocity += impulse;
     }
-
-
     // Whenever player collides with bottom or an enemy
     private void OnBounce()
     {
         // For now, just reload on touch
         currentGun.Reload();
     }
+
 
     private void TickPhysics(float delta)
     {
@@ -319,7 +309,7 @@ public class Player : Node2D, HitboxOwner
         TickPhysics(delta - preDelta);
     }
 
-    // Collisions with enemies don't have to be as exact
+    // Collision timings with enemies don't have to be as exact
     private void TickCollisions(float delta)
     {
         hitTimer = Mathf.Max(0, hitTimer - delta);
@@ -339,8 +329,6 @@ public class Player : Node2D, HitboxOwner
                 int damage = hitEnemy.DealContactDamage(this);
                 if (damage >= 0)
                 {
-                    hitTimer = InvulTimer;
-
                     // Temp bounce code; uses preframe to prevent going too deep into hitbox TODO: Actuall collision math? Imagine
                     Vector2 normal = hitboxOwner.GetHitbox().GetNormal(preframe);
                     Vector2 projection = velocity.Dot(normal) * normal;
@@ -368,10 +356,15 @@ public class Player : Node2D, HitboxOwner
         }
     }
 
+// MARK: Health and xp
     public void TakeDamage(int damage)
     {
-        health -= damage;
-        OnHealthUpdate();
+        if (hitTimer <= 0)
+        {
+            hitTimer = InvulTimer;
+            health -= damage;
+            OnHealthUpdate();
+        }
     }
 
     public void AddXP(int xpAmount)
@@ -398,6 +391,27 @@ public class Player : Node2D, HitboxOwner
         GameManager.GetUI().UpdateXP(currentXp / (float) levelXp);
     }
 
+// MARK: Animation
+    private void TickAnimation(float delta)
+    {
+        if (hitTimer > 0)
+            Modulate = hitTimer % 0.4f > 0.2f ? Consts.colorInvis : Colors.White;
+        else
+            Modulate = Colors.White;
+    }
+
+// MARK: Other
+    public float GetTimeDilation()
+    {
+        if (upgradeTracker.HasUpgrade(Upgrade.TimeSlow))
+        {
+            if (Input.IsActionPressed("key_rmb"))
+            {
+                return 0.5f;
+            }
+        }
+        return 1.0f;
+    }
     private void TickGhosting(float delta)
     {
         Vector2 movementInput = new Vector2(Input.GetAxis("key_left", "key_right"),

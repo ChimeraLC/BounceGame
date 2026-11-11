@@ -26,6 +26,7 @@ public static class Consts
     public static int FieldBottom = 520;
 
     // Colors
+    public static Color colorInvis = new Color(1, 1, 1, 0);
     public static Color colorLight = Color.Color8(185, 185, 185);
     public static Color colorDark = Color.Color8(28, 28, 28);
     public static Color colorDanger = Color.Color8(90, 22, 22);

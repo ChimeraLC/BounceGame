@@ -122,10 +122,10 @@ public partial class CollisionManager
             // Update hitbox position
             hitbox.UpdateHitbox();
 
-            bool hit = hitbox.OverlapsHitbox(testHitbox);
+            (bool hit, HitboxOwner owner) = testHitbox.OverlapsHitbox(hitbox);
             if (hit)
             {
-                return (hit, hitbox.GetHitboxOwner());
+                return (hit, owner);
             }
         }
         return (false, null);

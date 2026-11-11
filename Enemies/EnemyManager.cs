@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 
@@ -8,6 +9,7 @@ public enum EnemyType
     ChaserBase,
     ChaserExplode,
     BurrowerBasic,
+    CrawlerBasic,
     UpgradeOrb,
 }
 
@@ -26,6 +28,7 @@ public class EnemyManager
         [EnemyType.TumorShooter] = "res://Enemies/BasicEnemies/Tumor/TumorShooterEnemy.tscn",
         [EnemyType.UpgradeOrb] = "res://Player/Upgrades/UpgradeOrb.tscn",
         [EnemyType.BurrowerBasic] = "res://Enemies/BasicEnemies/Burrower/BurrowerEnemy.tscn",
+        [EnemyType.CrawlerBasic] = "res://Enemies/BasicEnemies/Crawler/CrawlerEnemy.tscn",
     };
 
     public EnemyManager()
@@ -40,7 +43,8 @@ public class EnemyManager
         [EnemyType.TumorStatic] = 1,
         [EnemyType.TumorShooter] = 2,
         [EnemyType.UpgradeOrb] = 0,
-        [EnemyType.BurrowerBasic] = 2
+        [EnemyType.BurrowerBasic] = 2,
+        [EnemyType.CrawlerBasic] = 3,
     };
 
     public void RegisterEnemy(Enemy newEnemy)
@@ -61,7 +65,7 @@ public class EnemyManager
             SpawnEnemy(EnemyType.ChaserBase);
     
         if (Input.IsActionJustPressed("debug_2"))
-            SpawnEnemy(EnemyType.ChaserExplode);
+            SpawnEnemy(EnemyType.CrawlerBasic);
             
         if (Input.IsActionJustPressed("debug_3"))
             SpawnEnemy(EnemyType.TumorStatic);
@@ -142,5 +146,17 @@ public class EnemyManager
 
         Logger.Log($"Enemy type {enemyType} has no xp data", LogLevel.error);
         return 0;
+    }
+
+    // Checks that xp and prefabs are all valid
+    public void VerifyData()
+    {
+        foreach (EnemyType enemyType in Enum.GetValues(typeof(EnemyType)))
+        {
+            GetPrefab(enemyType);
+
+            if (!xpValues.ContainsKey(enemyType))
+                Logger.Log($"Enemy type {enemyType} missing xp value.", LogLevel.error);
+        }
     }
 }

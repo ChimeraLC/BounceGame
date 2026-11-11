@@ -98,4 +98,9 @@ public static partial class Utils
     {
         return rand.Next() % (high - low) + low;
     }
+
+    public static float RandRange(float low, float high)
+    {
+        return rand.Next()  % (high - low) + low;
+    }
 }

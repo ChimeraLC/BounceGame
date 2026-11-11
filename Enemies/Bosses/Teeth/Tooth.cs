@@ -5,6 +5,7 @@ public class Tooth : Enemy
 {
     public Sprite sprite;
     public RectHitbox hitbox;
+    public Vector2 BasePosition;
 
     public override void _Ready()
     {

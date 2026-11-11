@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Runtime.Remoting.Messaging;
+using System.Security.Cryptography.X509Certificates;
 using Godot;
 
 public enum HitboxOwnerType
@@ -63,36 +64,44 @@ public abstract class Hitbox
 
 
     /// <summary> Returns if this hitbox overlaps the other given hibox </summary>
-    public bool OverlapsHitbox(Hitbox otherHitbox) { return HitboxesOverlap(this, otherHitbox); }
-    public static bool HitboxesOverlap(Hitbox hitbox1, Hitbox hitbox2)
+    public (bool, HitboxOwner) OverlapsHitbox(Hitbox otherHitbox) { return HitboxesOverlap(this, otherHitbox); }
+    public static (bool, HitboxOwner) HitboxesOverlap(Hitbox hitbox1, Hitbox hitbox2)
     {
         // Make sure both hitboxes are active
         if (!hitbox1.enabled || !hitbox2.enabled)
-            return false;
-        
-        // TODO: Cleanup; It's a bit messy
-        // Compound cases
+            return (false, null);
+
         if (hitbox1 is CompoundHitbox compoundHitbox)
         {
             foreach (Hitbox subHitbox in compoundHitbox.GetHitboxes())
             {
-                if (HitboxesOverlap(subHitbox, hitbox2))
-                    return true;
+                (bool overlap, HitboxOwner owner) = HitboxesOverlap(subHitbox, hitbox2);
+                if (overlap)
+                    return (overlap, owner);
             }
-            return false;
+            return (false, null);
         }
-        if (hitbox2 is CompoundHitbox compoundHitbox2)
+        else
         {
-            foreach (Hitbox subHitbox in compoundHitbox2.GetHitboxes())
+            if (hitbox2 is CompoundHitbox compoundHitbox1)
             {
-                if (HitboxesOverlap(hitbox1, subHitbox))
+                foreach (Hitbox subHitbox in compoundHitbox1.GetHitboxes())
                 {
-                    return true;
+                    if (HitboxNoncompoundOverlap(hitbox1, subHitbox))
+                        return (true, subHitbox.hitboxOwner);
                 }
+                return (false, null);
             }
-            return false;
         }
+
+        if (HitboxNoncompoundOverlap(hitbox1, hitbox2))
+            return (true, hitbox2.hitboxOwner);
         
+        return (false, null);
+    }
+
+    public static bool HitboxNoncompoundOverlap(Hitbox hitbox1, Hitbox hitbox2)
+    {
         if (hitbox1 is RectHitbox rectHitbox)
         {
             if (hitbox2 is RectHitbox rectHitbox2)
@@ -116,9 +125,9 @@ public abstract class Hitbox
             }
         }
 
-        Logger.Log("Recieved unsuported hitbox types in HitboxesOverlap()", LogLevel.error);
+        Logger.Log("Recieved unsuported hitbox types in HitboxNoncompoundOverlap()", LogLevel.error);
         return false;
-    }
+    }    
 
     public static bool RectRectOverlap(RectHitbox hitbox1, RectHitbox hitbox2)
     {
@@ -287,6 +296,9 @@ public class CompoundHitbox : Hitbox
 
         foreach (Hitbox hitbox in hitboxes)
         {
+            if (!hitbox.enabled)
+                continue;
+
             (float potentialHit, HitboxOwner potentialOwner) = hitbox.GetFirstRayHit(start, direction);
             if (potentialHit > 0)
             {
@@ -305,6 +317,9 @@ public class CompoundHitbox : Hitbox
     {
         foreach (Hitbox hitbox in hitboxes)
         {
+            if (!hitbox.enabled)
+                continue;
+
             (bool hit, HitboxOwner potentialOwner) = hitbox.GetContainsHit(testPosition);
             if (hit)
             {
