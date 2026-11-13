@@ -6,6 +6,7 @@ public enum Upgrade
     DamageUp, // Increases damage, repeatable
     JetControls, // Can use WASD to slightly control movement
     TimeSlow, // Can hold rmb to slow time
+    Pierce,
 }
 
 public struct UpgradeRequirement
@@ -26,6 +27,7 @@ public class UpgradeData
         [Upgrade.DamageUp] = ("Damage Up", "Increases damage by 1"),
         [Upgrade.JetControls] = ("Jet Controls", "Use A and D to control in-air movement slightly."),
         [Upgrade.TimeSlow] = ("Time Slow", "Hold RMB to slow down time"),
+        [Upgrade.Pierce] = ("Pierce", "Bullets pierce through enemies")
     };
 
     public static Dictionary<Upgrade, UpgradeRequirement> UpgradeReqs = 
@@ -34,6 +36,7 @@ public class UpgradeData
         [Upgrade.DamageUp] = new UpgradeRequirement(false),
         [Upgrade.JetControls] = new UpgradeRequirement(true),
         [Upgrade.TimeSlow] = new UpgradeRequirement(true),  
+        [Upgrade.Pierce] = new UpgradeRequirement(true),  
     };
 
     public static (string name, string description) GetData(Upgrade upgrade)

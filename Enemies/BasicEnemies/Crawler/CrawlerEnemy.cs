@@ -1,4 +1,5 @@
 // Enemy that crawls around on the background; Larger, but doesn't directly chase player
+using System.Collections.Generic;
 using System.Data;
 using Godot;
 
@@ -12,6 +13,7 @@ public partial class CrawlerEnemy : Enemy
     private const float edgePadding = 120; // How far from edge move targets have to be
     private const float desiredRadius = 360;
     private Vector2 targetPosition;
+    private Vector2 moveDirection;
     private enum CrawlerState
     {
         Idle,
@@ -23,6 +25,9 @@ public partial class CrawlerEnemy : Enemy
     private const float minIdle = 3;
     private const float maxIdle = 6;
 
+    private HashSet<CrawlerLeg> legs = new HashSet<CrawlerLeg>();
+    private float legRadius = 60;
+
     public override void _Ready()
     {
         base._Ready();
@@ -30,6 +35,10 @@ public partial class CrawlerEnemy : Enemy
         hitbox = new CircleHitbox(this, Position, radius);
 
         body = GetNode<Node2D>("CrawlerBody");
+        legs.Add(GetNode<CrawlerLeg>("LegRight"));
+        legs.Add(GetNode<CrawlerLeg>("LegBottom"));
+        legs.Add(GetNode<CrawlerLeg>("LegLeft"));
+        legs.Add(GetNode<CrawlerLeg>("LegTop"));
     
         health = 3;
 
@@ -56,7 +65,14 @@ public partial class CrawlerEnemy : Enemy
                     currentState = CrawlerState.Idle;
                     idleTimer = Utils.RandRange(minIdle, maxIdle);
                 }
+
+                CheckLegs();
             break;
+        }
+
+        foreach (CrawlerLeg leg in legs)
+        {
+            leg.Tick(delta, currentState == CrawlerState.Moving);
         }
     }
 
@@ -70,9 +86,25 @@ public partial class CrawlerEnemy : Enemy
         targetPosition = new Vector2(Utils.RandRange(Consts.FieldLeft + edgePadding, Consts.FieldRight - edgePadding),
             Utils.RandRange(Consts.FieldTop + edgePadding, Consts.FieldBottom - edgePadding));
         
+        moveDirection = (targetPosition - Position).Normalized();
+
         // Prefer movement that's further away, but don't force it
         if (firstTime && (targetPosition - Position).LengthSquared() < desiredRadius * desiredRadius)
             ChooseTarget(false);
+    }
+
+    // Check positions of all the legs
+    private void CheckLegs()
+    {
+        foreach (CrawlerLeg leg in legs)
+        {
+            Vector2 center = leg.Position * 2.5f + Position;
+            if (Mathf.Abs(leg.goalPosition.x - center.x) > legRadius ||
+                Mathf.Abs(leg.goalPosition.y - center.y) > legRadius)
+            {
+                leg.SetGoal(center + moveDirection * legRadius / 2 + Utils.RandVectorInRect(legRadius/2, legRadius/2));
+            }
+        }
     }
 
     public override void UpdateHitbox()

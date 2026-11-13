@@ -10,6 +10,7 @@ public enum EnemyType
     ChaserExplode,
     BurrowerBasic,
     CrawlerBasic,
+    JellyfishBasic,
     UpgradeOrb,
 }
 
@@ -29,6 +30,7 @@ public class EnemyManager
         [EnemyType.UpgradeOrb] = "res://Player/Upgrades/UpgradeOrb.tscn",
         [EnemyType.BurrowerBasic] = "res://Enemies/BasicEnemies/Burrower/BurrowerEnemy.tscn",
         [EnemyType.CrawlerBasic] = "res://Enemies/BasicEnemies/Crawler/CrawlerEnemy.tscn",
+        [EnemyType.JellyfishBasic] = "res://Enemies/BasicEnemies/Jellyfish/JellyfishEnemy.tscn",
     };
 
     public EnemyManager()
@@ -45,6 +47,7 @@ public class EnemyManager
         [EnemyType.UpgradeOrb] = 0,
         [EnemyType.BurrowerBasic] = 2,
         [EnemyType.CrawlerBasic] = 3,
+        [EnemyType.JellyfishBasic] = 2,
     };
 
     public void RegisterEnemy(Enemy newEnemy)
@@ -71,7 +74,7 @@ public class EnemyManager
             SpawnEnemy(EnemyType.TumorStatic);
 
         if (Input.IsActionJustPressed("debug_4"))
-            SpawnEnemy(EnemyType.BurrowerBasic);
+            SpawnEnemy(EnemyType.JellyfishBasic);
     }
 
     private void TickEnemies(float delta)
@@ -89,6 +92,8 @@ public class EnemyManager
         garbageEnemies.Clear();
         foreach (Enemy enemy in enemies)
         {
+            enemy.CheckDead();
+
             if (!enemy.InPlay())
             {
                 garbageEnemies.Add(enemy);

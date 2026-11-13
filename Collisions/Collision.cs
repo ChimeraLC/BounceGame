@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 
@@ -50,7 +51,9 @@ public partial class CollisionManager
         Instance.collisionObstacles.Remove(outObstacle);
     }
 
-    public static (float, HitboxOwner) GetFirstHitboxRayhit(Vector2 start, Vector2 direction, HitboxOwnerType queryType = HitboxOwnerType.Any)
+    public delegate bool OwnerTest(HitboxOwner owner);
+    public static (float, HitboxOwner) GetFirstHitboxRayhit(Vector2 start, Vector2 direction, 
+        HitboxOwnerType queryType = HitboxOwnerType.Any, OwnerTest testDelegate = null)
     {
         float firstHit = -1;
         HitboxOwner hitOwner = null;
@@ -71,7 +74,8 @@ public partial class CollisionManager
             hitbox.UpdateHitbox();
 
             (potentialHit, potentialOwner) = hitbox.GetFirstRayHit(start, direction);
-            if (potentialHit > 0 && (firstHit < 0 || potentialHit < firstHit))
+            if (potentialHit > 0 && (firstHit < 0 || potentialHit < firstHit) &&
+                (testDelegate == null || testDelegate(potentialOwner)))
             {
                 firstHit = potentialHit;
                 hitOwner = potentialOwner;
@@ -80,6 +84,33 @@ public partial class CollisionManager
 
         return (firstHit, hitOwner);
     }
+
+    // Runs the given delegate for every single hitbox on the ray
+    public static void ForEachHitboxRayhit(Vector2 start, Vector2 direction,
+        HitboxOwnerType queryType, Action<float, HitboxOwner> hitDelegate)
+    {
+        
+        float potentialHit;
+        HitboxOwner potentialOwner;
+        foreach ( Hitbox hitbox in Instance.hitboxes)
+        {
+            if (!hitbox.enabled)
+                continue;
+
+            if (queryType != HitboxOwnerType.Any && hitbox.GetHitboxOwnerType() != queryType)
+            {
+                continue;
+            }
+
+            // Update hitbox position if necessary
+            hitbox.UpdateHitbox();
+
+            (potentialHit, potentialOwner) = hitbox.GetFirstRayHit(start, direction);
+            if (potentialHit > 0)
+                hitDelegate(potentialHit, potentialOwner);
+        }
+    }
+
 
     // Returns a hitbox owner if it overlaps with the position; doesn't test closeness
     public static (bool, HitboxOwner) GetContainsHit(Vector2 testPosition, HitboxOwnerType queryType = HitboxOwnerType.Any)

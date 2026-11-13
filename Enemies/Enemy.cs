@@ -6,8 +6,10 @@ public abstract class Enemy : Node2D, HitboxOwner
 {
     // In play
     private bool isAlive = true;
+    private bool runDeath = false; // So death calculations all run at the end of frame
     private bool inPlay = true;
     protected float health = 5;
+
 
     // Leaving play
     float hurtTimer = 0;
@@ -16,6 +18,9 @@ public abstract class Enemy : Node2D, HitboxOwner
     EnemyManager enemyManager;
 
     protected static Random rand = new Random();
+
+    // Other info
+    public bool blocksBullets {get; protected set;} = true; // If bullets pierce or not
 
     public virtual void Tick(float delta)
     {
@@ -60,15 +65,31 @@ public abstract class Enemy : Node2D, HitboxOwner
     public virtual void TakeDamage( float damage, DamageType damageType = DamageType.Ballistic,
         bool continuousDamage = false)
     {
-        health -= damage;
-        if (health <= 0)
+        if (health > 0)
         {
-            isAlive = false;
-            hurtTimer = 0.2f;
+            health -= damage;
+            if (health <= 0)
+            {
+                isAlive = false;
+                hurtTimer = 0.2f;
+                runDeath = true;
+            }
+            else if (!continuousDamage)
+                hurtTimer = 0.2f;
+        }
+        else
+        {
+            Logger.Log("Enemy took damage while health < 0", LogLevel.error);
+        }
+    }
+
+    public virtual void CheckDead()
+    {
+        if (runDeath)
+        {
+            runDeath = false;
             OnDeath();
         }
-        else if (!continuousDamage)
-            hurtTimer = 0.2f;
     }
 
     public virtual bool IsAlive() {return isAlive;}

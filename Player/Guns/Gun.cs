@@ -50,13 +50,28 @@ public abstract class Gun
         }
     }
 
-    protected virtual void DrawPreviewLine( Node2D owner, Vector2 position, Vector2 aimDirection)
+    public bool BulletBlocking(HitboxOwner owner)
+    {
+        if (owner is Enemy enemy)
+            return enemy.blocksBullets;
+        return true;
+    }
+
+    // Gets endpoint of fired shot
+    protected virtual float GetShotEnd(Vector2 position, Vector2 aimDirection)
     {
         (float firstHit, _) = CollisionManager.GetFirstCollisionRayhit(position, aimDirection);
-        (float secondHit, _) = CollisionManager.GetFirstHitboxRayhit(position, aimDirection, HitboxOwnerType.Enemy);
+        (float secondHit, _) = CollisionManager.GetFirstHitboxRayhit(position, aimDirection, HitboxOwnerType.Enemy, BulletBlocking);
         if (secondHit >= 0)
             firstHit = Mathf.Min(firstHit, secondHit);
-        owner.DrawLine(Vector2.Zero, aimDirection * firstHit, Consts.colorLight, 4);        
+
+        return firstHit;
+    }
+
+    protected virtual void DrawPreviewLine( Node2D owner, Vector2 position, Vector2 aimDirection)
+    {
+        float shotEnd = GetShotEnd(position, aimDirection);
+        owner.DrawLine(Vector2.Zero, aimDirection * shotEnd, Consts.colorLight, 4);        
     }
 
     public virtual void DisplayAmmo( Control owner, Vector2 centerPosition ) {}

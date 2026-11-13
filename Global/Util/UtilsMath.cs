@@ -94,6 +94,7 @@ public static partial class Utils
         return (lower, higher);
     }
 
+    /// <summary> Returns random value between low (inclusive) and high (non-inclusive) </summary>
     public static int RandRange(int low, int high)
     {
         return rand.Next() % (high - low) + low;

@@ -21,13 +21,16 @@ public class Pistol : Gun
         }
 
         // Deal damage
-        (float hitDist, HitboxOwner hitOwner) = CollisionManager.GetFirstHitboxRayhit(
-            firingPlayer.Position, aimDirection, HitboxOwnerType.Enemy
-        );
-        if (hitOwner is Enemy hitEnemy)
+        float hitDist = GetShotEnd(firingPlayer.Position, aimDirection);
+
+        CollisionManager.ForEachHitboxRayhit(firingPlayer.Position, aimDirection, HitboxOwnerType.Enemy,
+            (distance, hitboxOwner) =>
         {
-            hitEnemy.TakeDamage(1.0f * firingPlayer.GetDamageModifier());
-        }
+            if (distance <= hitDist && hitboxOwner is Enemy hitEnemy )
+            {
+                hitEnemy.TakeDamage(1.0f * firingPlayer.GetDamageModifier());
+            }
+        });
     }
 
     public override void Reload()

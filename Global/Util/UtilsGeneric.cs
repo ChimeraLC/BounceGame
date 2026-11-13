@@ -86,4 +86,12 @@ public static partial class Utils
             return (end, true);
         return (start + Mathf.Sign(difference) * distance, false);
     }
+
+    /// <summary> Returns the closer rotation directino (+/-) to get from start to end</summary>
+    public static float MoveTowardsAngleDirection(float start, float end)
+    {
+        float difference = (end - start) % (2 * Mathf.Pi);
+        difference = (2 * difference) % (2 * Mathf.Pi) - difference;
+        return Mathf.Sign(difference);
+    }
 }

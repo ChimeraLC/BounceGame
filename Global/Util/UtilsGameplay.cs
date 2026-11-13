@@ -87,4 +87,23 @@ public static partial class Utils
         Logger.Log("GenerateEdgepoint() given an invalid side", LogLevel.error);
         return Vector2.Zero;
     }
+
+    /// <summary> Returns vector coresponding to facing inwards from the given edge </summary>
+    public static Vector2 GetEdgeNormal( FieldEdge edge )
+    {
+        switch (edge)
+        {
+            case FieldEdge.Left:
+            return Vector2.Right;
+            case FieldEdge.Right:
+            return Vector2.Left;
+            case FieldEdge.Top:
+            return Vector2.Down;
+            case FieldEdge.Bottom:
+            return Vector2.Up;
+        }
+
+        Logger.Log($"GetEdgeNormal() recieved invalid edge {edge}", LogLevel.error);
+        return Vector2.Up;
+    }
 }
