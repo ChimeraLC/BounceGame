@@ -17,7 +17,7 @@ public enum LogLevel
 /// </summary>
 public enum LogChannel
 {
-    Default = LogLevel.debug, // Default will always display log level
+    Default = LogLevel.info, // Default will always display log level
     Movement = LogLevel.warn,
     BossBehavior = LogLevel.warn,
 }

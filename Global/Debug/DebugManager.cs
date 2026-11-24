@@ -77,6 +77,9 @@ public partial class DebugManager: Control
             case "showupgrades":
                 UpgradeManager.Instance.ShowUpgrades();
             break;
+            case "heal":
+                Player.Instance.Heal(1000);
+            break;
         }
     }
 #endif // #if DEBUG

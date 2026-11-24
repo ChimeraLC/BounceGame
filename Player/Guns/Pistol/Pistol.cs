@@ -21,7 +21,7 @@ public class Pistol : Gun
         }
 
         // Deal damage
-        float hitDist = GetShotEnd(firingPlayer.Position, aimDirection);
+        float hitDist = GetShotEnd(firingPlayer, firingPlayer.Position, aimDirection);
 
         CollisionManager.ForEachHitboxRayhit(firingPlayer.Position, aimDirection, HitboxOwnerType.Enemy,
             (distance, hitboxOwner) =>

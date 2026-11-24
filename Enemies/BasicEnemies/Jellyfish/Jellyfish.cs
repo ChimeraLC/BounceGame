@@ -4,24 +4,24 @@ using System;
 // Similar to the chaser, but moves in bursts
 public class Jellyfish : Enemy
 {
-    CircleHitbox hitbox;
-    private enum JellyState
+    protected CircleHitbox hitbox;
+    protected enum JellyState
     {
         Idle, // Between Dashes
         Dashing, // Dashing
     }
 
-    int dashCount = 0;
-    float stateTimer = 2;
-    const float idleLength = 4;
-    const float dashLength = 2;
-    const float betweenLength = 0.5f;
-    const float rotateRate = 0.25f;
-    Vector2 facingDirection;
-    float rotationDirection = 0;
+    protected int dashCount = 0;
+    protected float stateTimer = 2;
+    protected const float idleLength = 4;
+    protected const float dashLength = 2;
+    protected const float betweenLength = 0.5f;
+    protected const float rotateRate = 0.25f;
+    protected Vector2 facingDirection;
+    protected float rotationDirection = 0;
 
 
-    private JellyState currentState = JellyState.Idle;
+    protected  JellyState currentState = JellyState.Idle;
 
     public override void _Ready()
     {

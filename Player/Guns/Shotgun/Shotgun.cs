@@ -36,13 +36,13 @@ public class Shotgun : Gun
         }
     }
 
-    public override void DrawPreview( Node2D owner, Vector2 aimDirection )
+    public override void DrawPreview( Player player, Vector2 aimDirection )
     {
         if (CanFire())
         {
             foreach (Vector2 direction in GetShotgunDirections(aimDirection))
             {
-                DrawPreviewLine( owner, owner.Position, direction);
+                DrawPreviewLine( player, player.Position, direction);
             }
         }
     }

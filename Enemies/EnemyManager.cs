@@ -11,6 +11,8 @@ public enum EnemyType
     BurrowerBasic,
     CrawlerBasic,
     JellyfishBasic,
+    JellyfishPregnant,
+    TickEnemy,
     UpgradeOrb,
 }
 
@@ -30,7 +32,9 @@ public class EnemyManager
         [EnemyType.UpgradeOrb] = "res://Player/Upgrades/UpgradeOrb.tscn",
         [EnemyType.BurrowerBasic] = "res://Enemies/BasicEnemies/Burrower/BurrowerEnemy.tscn",
         [EnemyType.CrawlerBasic] = "res://Enemies/BasicEnemies/Crawler/CrawlerEnemy.tscn",
+        [EnemyType.TickEnemy] = "res://Enemies/BasicEnemies/Tick/TickEnemy.tscn",
         [EnemyType.JellyfishBasic] = "res://Enemies/BasicEnemies/Jellyfish/JellyfishEnemy.tscn",
+        [EnemyType.JellyfishPregnant] = "res://Enemies/BasicEnemies/Jellyfish/JellyfishPregnant.tscn",
     };
 
     public EnemyManager()
@@ -47,7 +51,9 @@ public class EnemyManager
         [EnemyType.UpgradeOrb] = 0,
         [EnemyType.BurrowerBasic] = 2,
         [EnemyType.CrawlerBasic] = 3,
+        [EnemyType.TickEnemy] = 0,
         [EnemyType.JellyfishBasic] = 2,
+        [EnemyType.JellyfishPregnant] = 3,
     };
 
     public void RegisterEnemy(Enemy newEnemy)
@@ -74,7 +80,7 @@ public class EnemyManager
             SpawnEnemy(EnemyType.TumorStatic);
 
         if (Input.IsActionJustPressed("debug_4"))
-            SpawnEnemy(EnemyType.JellyfishBasic);
+            SpawnEnemy(EnemyType.JellyfishPregnant);
     }
 
     private void TickEnemies(float delta)
@@ -107,13 +113,14 @@ public class EnemyManager
     }
 
     // TODO: Have some legality checks
-    public static void RequestEnemy(EnemyType enemyType)
+    public static Enemy RequestEnemy(EnemyType enemyType)
     {
         if (Instance != null)
-            Instance.SpawnEnemy(enemyType);
+            return Instance.SpawnEnemy(enemyType);
+        return null;
     }
 
-    private void SpawnEnemy(EnemyType enemyType)
+    private Enemy SpawnEnemy(EnemyType enemyType)
     {
         PackedScene scene = GetPrefab(enemyType);
         if (scene != null)
@@ -122,7 +129,11 @@ public class EnemyManager
             newEnemy.GlobalPosition = newEnemy.GetSpawnpoint();
             newEnemy.xpWorth = GetXPWorth(enemyType);
             GameManager.WorldRoot.AddChild(newEnemy);
+
+            return newEnemy;
         }
+
+        return null;
     }
 
     private PackedScene GetPrefab(EnemyType enemyType)

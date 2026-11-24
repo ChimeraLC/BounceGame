@@ -42,11 +42,11 @@ public abstract class Gun
         reloadTime = Mathf.Max(0, reloadTime - delta / 2);
     }
 
-    public virtual void DrawPreview( Node2D owner, Vector2 aimDirection )
+    public virtual void DrawPreview( Player player, Vector2 aimDirection )
     {
         if (CanFire())
         {
-            DrawPreviewLine( owner, owner.Position, aimDirection);
+            DrawPreviewLine( player, player.Position, aimDirection);
         }
     }
 
@@ -58,20 +58,24 @@ public abstract class Gun
     }
 
     // Gets endpoint of fired shot
-    protected virtual float GetShotEnd(Vector2 position, Vector2 aimDirection)
+    protected virtual float GetShotEnd(Player player, Vector2 position, Vector2 aimDirection)
     {
         (float firstHit, _) = CollisionManager.GetFirstCollisionRayhit(position, aimDirection);
-        (float secondHit, _) = CollisionManager.GetFirstHitboxRayhit(position, aimDirection, HitboxOwnerType.Enemy, BulletBlocking);
-        if (secondHit >= 0)
-            firstHit = Mathf.Min(firstHit, secondHit);
+
+        if (!player.upgradeTracker.HasUpgrade(Upgrade.Pierce))
+        {
+            (float secondHit, _) = CollisionManager.GetFirstHitboxRayhit(position, aimDirection, HitboxOwnerType.Enemy, BulletBlocking);
+            if (secondHit >= 0)
+                firstHit = Mathf.Min(firstHit, secondHit);
+        }
 
         return firstHit;
     }
 
-    protected virtual void DrawPreviewLine( Node2D owner, Vector2 position, Vector2 aimDirection)
+    protected virtual void DrawPreviewLine( Player player, Vector2 position, Vector2 aimDirection)
     {
-        float shotEnd = GetShotEnd(position, aimDirection);
-        owner.DrawLine(Vector2.Zero, aimDirection * shotEnd, Consts.colorLight, 4);        
+        float shotEnd = GetShotEnd(player, position, aimDirection);
+        player.DrawLine(Vector2.Zero, aimDirection * shotEnd, Consts.colorLight, 4);        
     }
 
     public virtual void DisplayAmmo( Control owner, Vector2 centerPosition ) {}

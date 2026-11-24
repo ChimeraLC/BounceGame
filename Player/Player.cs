@@ -34,7 +34,7 @@ public class Player : Node2D, HitboxOwner
     private int currentGunIndex;
 
     // Upgrades
-    public UpgradeTracker upgradeTracker;
+    public UpgradeTracker upgradeTracker {get; private set;}
 
 
     public override void _Ready()
@@ -85,6 +85,8 @@ public class Player : Node2D, HitboxOwner
     }
 
     public int GetHP() { return health; }
+
+    public void Heal(int healAmount) { health = Mathf.Min(MaxHealth, health + healAmount); OnHealthUpdate(); }
 
     public void UpdateHitbox() { hitbox.center = GlobalPosition; }
     public Hitbox GetHitbox() { return hitbox; }

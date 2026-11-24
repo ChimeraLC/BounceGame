@@ -76,12 +76,16 @@ public abstract class Enemy : Node2D, HitboxOwner
             }
             else if (!continuousDamage)
                 hurtTimer = 0.2f;
+
+            OnTakeDamage( damage, damageType );
         }
         else
         {
             Logger.Log("Enemy took damage while health < 0", LogLevel.error);
         }
     }
+
+    protected virtual void OnTakeDamage( float damage, DamageType damageType = DamageType.Ballistic ) {}
 
     public virtual void CheckDead()
     {

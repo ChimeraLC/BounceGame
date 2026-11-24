@@ -70,6 +70,16 @@ public static partial class Utils
         return (2, sol1, sol2);
     }
 
+    public static float TriangleHypot(float leg1, float leg2)
+    {
+        return Mathf.Sqrt(leg1 * leg1 + leg2 * leg2);
+    }
+
+    public static float TriangleLeg(float leg, float hypot)
+    {
+        return Mathf.Sqrt(hypot * hypot - leg * leg);
+    }
+
     // Returns two random ints between low and high, and least spacing apart
     public static (int, int) RandomSpaced(int low, int high, int spacing)
     {

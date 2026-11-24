@@ -5,8 +5,6 @@ public class TumorShooterEnemy : Enemy
 {
     CircleHitbox hitbox;
     Node2D tumorBody;
-    // Controls the projectile
-    Node2D projectileBody;
 
     [Export]
     public PackedScene projectileScene;
